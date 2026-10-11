@@ -988,14 +988,20 @@
                     outData = Object.values(monthlyData).map(m => m.out);
                 } else {
                     // MODE MINGGU
-                    if(document.getElementById('chart-title-bar')) document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Minggu Terakhir)`;
+                  if(document.getElementById('chart-title-bar')) document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Minggu Terakhir)`;
                     
                     const weeklyData = {};
                     for(let i=5; i>=0; i--) {
                         const d = new Date();
                         d.setDate(d.getDate() - (i * 7));
                         const wStr = getWeekString(d); // Contoh: "2026-W42"
-                        weeklyData[wStr] = { label: `Mg ke-${wStr.split('-W')[1]}`, in: 0, out: 0 };
+                        
+                        // Menentukan nama bulan singkat dan minggu ke-berapa dalam bulan tersebut
+                        const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+                        const mName = monthNames[d.getMonth()];
+                        const weekOfMonth = Math.ceil(d.getDate() / 7);
+                        
+                        weeklyData[wStr] = { label: `${mName} ming ke-${weekOfMonth}`, in: 0, out: 0 };
                     }
                     transactions.forEach(t => {
                         const d = new Date(t.date);
