@@ -220,9 +220,18 @@
 
                 <!-- Charts Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6">
-                        <h3 class="font-extrabold text-blue-950 mb-4"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas Bulanan</h3>
-                        <div class="h-64 flex items-center justify-center bg-blue-50/60 rounded-2xl p-2">
+                    <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
+                        
+                        <!-- FILTER KHUSUS CHART BALOK -->
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-extrabold text-blue-950" id="chart-title-bar"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Bulan Terakhir)</h3>
+                            <select id="chartViewType" onchange="renderCharts()" class="px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-xs font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer">
+                                <option value="month">Per Bulan</option>
+                                <option value="week">Per Minggu</option>
+                            </select>
+                        </div>
+                        
+                        <div class="h-64 flex-1 flex items-center justify-center bg-blue-50/60 rounded-2xl p-2">
                             <canvas id="cashflowChart"></canvas>
                         </div>
                     </div>
@@ -939,27 +948,71 @@
             });
         }
 
+        // --- FUNGSI MENDAPATKAN KODE MINGGU (YEAR-WEEK) ---
+        function getWeekString(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+        }
+
         function renderCharts() {
             const ctxBar = document.getElementById('cashflowChart');
             if(ctxBar) {
-                const monthlyData = {};
-                for(let i=5; i>=0; i--) {
-                    const d = new Date(); d.setMonth(d.getMonth() - i);
-                    const k = d.toISOString().substring(0, 7);
-                    const mName = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"][d.getMonth()];
-                    monthlyData[k] = { label: mName, in: 0, out: 0 };
-                }
-                transactions.forEach(t => {
-                    const k = t.date.substring(0, 7);
-                    if(monthlyData[k]) {
-                        if(t.type === 'in') monthlyData[k].in += t.amount;
-                        if(t.type === 'out') monthlyData[k].out += t.amount;
-                    }
-                });
+                // Ambil mode dari dropdown (default: month)
+                const chartMode = document.getElementById('chartViewType') ? document.getElementById('chartViewType').value : 'month';
+                let labels = [];
+                let inData = [];
+                let outData = [];
 
-                const labels = Object.values(monthlyData).map(m => m.label);
-                const inData = Object.values(monthlyData).map(m => m.in);
-                const outData = Object.values(monthlyData).map(m => m.out);
+                if (chartMode === 'month') {
+                    // Update judul chart
+                    if(document.getElementById('chart-title-bar')) document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Bulan Terakhir)`;
+                    
+                    const monthlyData = {};
+                    for(let i=5; i>=0; i--) {
+                        const d = new Date(); d.setMonth(d.getMonth() - i);
+                        const k = d.toISOString().substring(0, 7);
+                        const mName = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"][d.getMonth()];
+                        monthlyData[k] = { label: mName, in: 0, out: 0 };
+                    }
+                    transactions.forEach(t => {
+                        const k = t.date.substring(0, 7);
+                        if(monthlyData[k]) {
+                            if(t.type === 'in') monthlyData[k].in += t.amount;
+                            if(t.type === 'out') monthlyData[k].out += t.amount;
+                        }
+                    });
+
+                    labels = Object.values(monthlyData).map(m => m.label);
+                    inData = Object.values(monthlyData).map(m => m.in);
+                    outData = Object.values(monthlyData).map(m => m.out);
+                } else {
+                    // MODE MINGGU
+                    if(document.getElementById('chart-title-bar')) document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Minggu Terakhir)`;
+                    
+                    const weeklyData = {};
+                    for(let i=5; i>=0; i--) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - (i * 7));
+                        const wStr = getWeekString(d); // Contoh: "2026-W42"
+                        weeklyData[wStr] = { label: `Mg ke-${wStr.split('-W')[1]}`, in: 0, out: 0 };
+                    }
+                    transactions.forEach(t => {
+                        const d = new Date(t.date);
+                        const wStr = getWeekString(d);
+                        if(weeklyData[wStr]) {
+                            if(t.type === 'in') weeklyData[wStr].in += t.amount;
+                            if(t.type === 'out') weeklyData[wStr].out += t.amount;
+                        }
+                    });
+                    
+                    labels = Object.values(weeklyData).map(m => m.label);
+                    inData = Object.values(weeklyData).map(m => m.in);
+                    outData = Object.values(weeklyData).map(m => m.out);
+                }
 
                 if(cashflowChartInstance) cashflowChartInstance.destroy();
                 cashflowChartInstance = new Chart(ctxBar, {
