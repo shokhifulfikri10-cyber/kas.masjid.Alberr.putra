@@ -202,14 +202,13 @@
                             <div>
                                 <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pemasukan Bulan Ini</span>
                                 <h3 class="text-2xl font-extrabold text-blue-900 mt-1" id="display-in-month">Rp 0</h3>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-    <h3 class="font-extrabold text-blue-950"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas</h3>
-    <!-- Toggle Button untuk Per Pekan / Per Bulan -->
-    <div class="bg-blue-50 p-1 rounded-xl border border-blue-200 flex gap-1">
-        <button onclick="setChartMode('weekly')" id="btn-mode-weekly" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-xs">Per Pekan</button>
-        <button onclick="setChartMode('monthly')" id="btn-mode-monthly" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-blue-900 hover:bg-blue-100">Per Bulan</button>
-    </div>
-</div>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-2xl text-blue-700"><i class="fas fa-arrow-down-long text-lg"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
                             <div>
                                 <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pengeluaran Bulan Ini</span>
                                 <h3 class="text-2xl font-extrabold text-indigo-900 mt-1" id="display-out-month">Rp 0</h3>
@@ -941,55 +940,8 @@
         }
 
         function renderCharts() {
-        <script>
-    let currentChartMode = 'weekly'; // 'weekly' atau 'monthly'
-
-    function setChartMode(mode) {
-        currentChartMode = mode;
-        const btnWeekly = document.getElementById('btn-mode-weekly');
-        const btnMonthly = document.getElementById('btn-mode-monthly');
-
-        if (mode === 'weekly') {
-            btnWeekly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-xs";
-            btnMonthly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-blue-900 hover:bg-blue-100";
-        } else {
-            btnMonthly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-xs";
-            btnWeekly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-blue-900 hover:bg-blue-100";
-        }
-        renderCharts();
-    }
-
-    function renderCharts() {
-        const ctxBar = document.getElementById('cashflowChart');
-        if(ctxBar) {
-            let labels = [];
-            let inData = [];
-            let outData = [];
-
-            if (currentChartMode === 'weekly') {
-                const weeklyMap = {};
-                for (let i = 3; i >= 0; i--) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - (i * 7));
-                    const weekNum = getWeekNumber(d);
-                    const k = `${d.getFullYear()}-W${weekNum}`;
-                    weeklyMap[k] = { label: `Pekan ${4-i} (${d.toLocaleString('id-ID', {month:'short'})})`, in: 0, out: 0 };
-                }
-
-                transactions.forEach(t => {
-                    const tDate = new Date(t.date);
-                    const wNum = getWeekNumber(tDate);
-                    const k = `${tDate.getFullYear()}-W${wNum}`;
-                    if (weeklyMap[k]) {
-                        if (t.type === 'in') weeklyMap[k].in += t.amount;
-                        if (t.type === 'out') weeklyMap[k].out += t.amount;
-                    }
-                });
-
-                labels = Object.values(weeklyMap).map(m => m.label);
-                inData = Object.values(weeklyMap).map(m => m.in);
-                outData = Object.values(weeklyMap).map(m => m.out);
-            } else {
+            const ctxBar = document.getElementById('cashflowChart');
+            if(ctxBar) {
                 const monthlyData = {};
                 for(let i=5; i>=0; i--) {
                     const d = new Date(); d.setMonth(d.getMonth() - i);
@@ -997,32 +949,6 @@
                     const mName = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"][d.getMonth()];
                     monthlyData[k] = { label: mName, in: 0, out: 0 };
                 }
-                transactions.forEach(t => {
-                    const k = t.date.substring(0, 7);
-                    if(monthlyData[k]) {
-                        if(t.type === 'in') monthlyData[k].in += t.amount;
-                        if(t.type === 'out') monthlyData[k].out += t.amount;
-                    }
-                });
-
-                labels = Object.values(monthlyData).map(m => m.label);
-                inData = Object.values(monthlyData).map(m => m.in);
-                outData = Object.values(monthlyData).map(m => m.out);
-            }
-
-            if(cashflowChartInstance) cashflowChartInstance.destroy();
-            cashflowChartInstance = new Chart(ctxBar, {
-                type: 'bar',
-                data: { labels, datasets: [
-                    { label: 'Pemasukan', data: inData, backgroundColor: '#2563eb', borderRadius: 6 },
-                    { label: 'Pengeluaran', data: outData, backgroundColor: '#f97316', borderRadius: 6 }
-                ]},
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-    }
-
-    function getWeekNumber(d) {
                 transactions.forEach(t => {
                     const k = t.date.substring(0, 7);
                     if(monthlyData[k]) {
