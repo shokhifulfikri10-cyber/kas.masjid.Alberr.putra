@@ -1068,9 +1068,10 @@
                 map[t.room].total += t.amount;
             });
 
-            const sorted = Object.keys(map).map(k => ({ room: k, ...map[k] })).sort((a,b) => b.total - a.total);
+            // Mengurutkan berdasarkan frekuensi setor (count). Jika frekuensinya sama, baru diurutkan berdasarkan nominal (total)
+            const sorted = Object.keys(map).map(k => ({ room: k, ...map[k] })).sort((a, b) => b.count - a.count || b.total - a.total);
             tbody.innerHTML = '';
-
+            
             if (sorted.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-400">Belum ada data donatur kamar.</td></tr>`;
                 return;
