@@ -1,947 +1,973 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kas Masjid Al-Berr Putra</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF & autoTable for PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <!-- SheetJS for Excel Export & Import -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Chart.js for Donut & Bar Charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    window.firebaseAppModules = {
+        initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+        getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy
+    };
+</script>
 
-        window.firebaseAppModules = {
-            initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
-            getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy
-        };
-    </script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    /* Custom Zebra Striping for Tables */
+    .zebra-table tbody tr:nth-child(odd) { background-color: #eff6ff; /* blue-50 */ }
+    .zebra-table tbody tr:nth-child(even) { background-color: #ffffff; }
+    .zebra-table tbody tr:hover { background-color: #dbeafe; /* blue-100 */ }
+    .glass-modal {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Custom Zebra Striping for Tables */
-        .zebra-table tbody tr:nth-child(odd) { background-color: #eff6ff; /* blue-50 */ }
-        .zebra-table tbody tr:nth-child(even) { background-color: #ffffff; }
-        .zebra-table tbody tr:hover { background-color: #dbeafe; /* blue-100 */ }
-        .glass-modal {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body class="text-gray-800 h-screen flex flex-col md:flex-row overflow-hidden bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950 relative">
 
-    <!-- Custom Alert Notification Box (Top Center) -->
-    <div id="alertBox" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] hidden px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl transition-all duration-300 min-w-[300px] justify-center">
-        <i id="alertIcon" class="fas text-xl"></i>
-        <span id="alertMessage" class="font-semibold text-sm"></span>
-    </div>
+<!-- Custom Alert Notification Box (Top Center) -->
+<div id="alertBox" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] hidden px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl transition-all duration-300 min-w-[300px] justify-center">
+    <i id="alertIcon" class="fas text-xl"></i>
+    <span id="alertMessage" class="font-semibold text-sm"></span>
+</div>
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950">
-        <div class="glass-modal p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-blue-200/50 relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl opacity-20"></div>
-            <div class="mb-6 flex justify-center relative z-10">
-                <div class="bg-blue-600 text-white p-4 rounded-2xl shadow-lg ring-4 ring-blue-200 animate-pulse">
-                    <i class="fas fa-mosque text-4xl"></i>
-                </div>
-            </div>
-            <h1 class="text-2xl font-extrabold text-blue-950 relative z-10">Masjid Al-Berr Putra</h1>
-            <p class="text-blue-600 font-semibold text-sm mt-1 relative z-10">Sistem Keuangan & Analisis Digital</p>
-            
-            <div class="mt-8 space-y-4 relative z-10">
-                <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center bg-white border border-blue-200 rounded-xl px-6 py-3.5 text-sm font-bold text-blue-900 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all shadow-md group">
-                    <svg class="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Masuk dengan Akun Google
-                </button>
-                <p id="loginErrorMsg" class="text-xs text-red-500 font-semibold hidden"></p>
-                <p class="text-xs text-blue-200/80 pt-2">Tersambung ke Database Keuangan Masjid</p>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950">
+    <div class="glass-modal p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-blue-200/50 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl opacity-20"></div>
+        <div class="mb-6 flex justify-center relative z-10">
+            <div class="bg-blue-600 text-white p-4 rounded-2xl shadow-lg ring-4 ring-blue-200 animate-pulse">
+                <i class="fas fa-mosque text-4xl"></i>
             </div>
         </div>
+        <h1 class="text-2xl font-extrabold text-blue-950 relative z-10">Masjid Al-Berr Putra</h1>
+        <p class="text-blue-600 font-semibold text-sm mt-1 relative z-10">Sistem Keuangan & Analisis Digital</p>
+        
+        <div class="mt-8 space-y-4 relative z-10">
+            <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center bg-white border border-blue-200 rounded-xl px-6 py-3.5 text-sm font-bold text-blue-900 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all shadow-md group">
+                <svg class="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Masuk dengan Akun Google
+            </button>
+            <p id="loginErrorMsg" class="text-xs text-red-500 font-semibold hidden"></p>
+            <p class="text-xs text-blue-200/80 pt-2">Tersambung ke Database Keuangan Masjid</p>
+        </div>
     </div>
+</div>
 
-    <!-- DESKTOP SIDEBAR -->
-    <aside id="sidebar" class="w-64 bg-blue-950 text-white border-r border-blue-900/60 hidden md:flex flex-col h-full shadow-2xl shrink-0">
-        <div class="p-6 border-b border-blue-900/80 flex items-center gap-3 bg-gradient-to-r from-blue-900/50 to-indigo-950/50">
-            <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md"><i class="fas fa-mosque"></i></div>
-            <div>
-                <h2 class="font-bold text-white text-base leading-tight">Al-Berr Putra</h2>
-                <p class="text-[11px] text-blue-300">Sistem Keuangan Masjid</p>
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" class="w-64 bg-blue-950 text-white border-r border-blue-900/60 hidden md:flex flex-col h-full shadow-2xl shrink-0">
+    <div class="p-6 border-b border-blue-900/80 flex items-center gap-3 bg-gradient-to-r from-blue-900/50 to-indigo-950/50">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md"><i class="fas fa-mosque"></i></div>
+        <div>
+            <h2 class="font-bold text-white text-base leading-tight">Al-Berr Putra</h2>
+            <p class="text-[11px] text-blue-300">Sistem Keuangan Masjid</p>
+        </div>
+    </div>
+    
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-100 bg-blue-600 font-semibold transition-all shadow-sm">
+            <i class="fas fa-chart-pie w-5"></i> Dashboard Utama
+        </button>
+        <button onclick="switchTab('pemasukan')" id="nav-pemasukan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <i class="fas fa-hand-holding-dollar w-5"></i> Catat Pemasukan
+        </button>
+        <button onclick="switchTab('pengeluaran')" id="nav-pengeluaran" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <i class="fas fa-file-invoice-dollar w-5"></i> Catat Pengeluaran
+        </button>
+        <button onclick="switchTab('laporan')" id="nav-laporan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <i class="fas fa-file-alt w-5"></i> Buku Mutasi & Laporan
+        </button>
+        <button onclick="switchTab('kamar')" id="nav-kamar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar
+        </button>
+    </nav>
+
+    <div class="p-4 border-t border-blue-900/80 bg-blue-950/80">
+        <div class="flex items-center gap-3 mb-4">
+            <img id="userAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border-2 border-blue-400 shadow">
+            <div class="overflow-hidden">
+                <p class="text-sm font-semibold text-white truncate" id="userNameDisplay">Loading...</p>
+                <p class="text-[10px] text-blue-300 truncate" id="userEmailDisplay">Loading...</p>
             </div>
+        </div>
+        <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-200 bg-red-950/60 hover:bg-red-900/80 rounded-xl transition-all border border-red-900/50">
+            <i class="fas fa-sign-out-alt"></i> Keluar Akun
+        </button>
+    </div>
+</aside>
+
+<!-- MOBILE MENU DRAWER -->
+<div id="mobileMenu" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden flex">
+    <div class="w-72 bg-blue-950 text-white h-full shadow-2xl p-4 flex flex-col justify-between transform transition-transform">
+        <div>
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-blue-900">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-mosque"></i></div>
+                    <span class="font-bold text-blue-100 text-sm">Al-Berr Putra</span>
+                </div>
+                <button onclick="toggleMobileMenu()" class="text-blue-300 hover:text-white p-2"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <nav class="space-y-2">
+                <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl bg-blue-600 text-white font-semibold text-sm"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
+                <button onclick="switchTab('pemasukan'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-hand-holding-dollar w-5"></i> Pemasukan</button>
+                <button onclick="switchTab('pengeluaran'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-file-invoice-dollar w-5"></i> Pengeluaran</button>
+                <button onclick="switchTab('laporan'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-file-alt w-5"></i> Buku Mutasi</button>
+                <button onclick="switchTab('kamar'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar</button>
+            </nav>
         </div>
         
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-100 bg-blue-600 font-semibold transition-all shadow-sm">
-                <i class="fas fa-chart-pie w-5"></i> Dashboard Utama
-            </button>
-            <button onclick="switchTab('pemasukan')" id="nav-pemasukan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-hand-holding-dollar w-5"></i> Catat Pemasukan
-            </button>
-            <button onclick="switchTab('pengeluaran')" id="nav-pengeluaran" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-file-invoice-dollar w-5"></i> Catat Pengeluaran
-            </button>
-            <button onclick="switchTab('laporan')" id="nav-laporan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-file-alt w-5"></i> Buku Mutasi & Laporan
-            </button>
-            <button onclick="switchTab('kamar')" id="nav-kamar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar
-            </button>
-        </nav>
-
-        <div class="p-4 border-t border-blue-900/80 bg-blue-950/80">
+        <div class="pt-4 border-t border-blue-900">
             <div class="flex items-center gap-3 mb-4">
-                <img id="userAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border-2 border-blue-400 shadow">
+                <img id="mobileUserAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full border border-blue-400">
                 <div class="overflow-hidden">
-                    <p class="text-sm font-semibold text-white truncate" id="userNameDisplay">Loading...</p>
-                    <p class="text-[10px] text-blue-300 truncate" id="userEmailDisplay">Loading...</p>
+                    <p class="text-xs font-semibold text-white truncate" id="mobileUserNameDisplay">User</p>
+                    <p class="text-[10px] text-blue-300 truncate" id="mobileUserEmailDisplay">email@masjid</p>
                 </div>
             </div>
-            <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-200 bg-red-950/60 hover:bg-red-900/80 rounded-xl transition-all border border-red-900/50">
-                <i class="fas fa-sign-out-alt"></i> Keluar Akun
+            <button onclick="handleLogout()" class="w-full text-red-200 px-3 py-2 bg-red-950/60 rounded-xl border border-red-900 text-xs font-semibold flex items-center justify-center gap-2">
+                <i class="fas fa-sign-out-alt"></i> Keluar
             </button>
         </div>
-    </aside>
+    </div>
+    <div class="flex-1" onclick="toggleMobileMenu()"></div>
+</div>
 
-    <!-- MOBILE MENU DRAWER -->
-    <div id="mobileMenu" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden flex">
-        <div class="w-72 bg-blue-950 text-white h-full shadow-2xl p-4 flex flex-col justify-between transform transition-transform">
-            <div>
-                <div class="flex justify-between items-center mb-6 pb-4 border-b border-blue-900">
-                    <div class="flex items-center gap-2">
-                        <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-mosque"></i></div>
-                        <span class="font-bold text-blue-100 text-sm">Al-Berr Putra</span>
-                    </div>
-                    <button onclick="toggleMobileMenu()" class="text-blue-300 hover:text-white p-2"><i class="fas fa-times text-lg"></i></button>
+<!-- MAIN CONTENT AREA -->
+<main class="flex-1 flex flex-col h-full hidden overflow-hidden relative bg-gradient-to-br from-blue-950 via-sky-900 to-indigo-950 backdrop-blur-sm md:rounded-l-3xl shadow-2xl" id="mainApp">
+    <!-- Mobile Header Bar -->
+    <header class="md:hidden bg-blue-950 text-white p-4 flex justify-between items-center z-10 shadow-md shrink-0">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-mosque"></i></div>
+            <h2 class="font-bold text-sm">Masjid Al-Berr Putra</h2>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white focus:outline-none p-2 rounded-lg bg-blue-900/80">
+            <i class="fas fa-bars text-lg"></i>
+        </button>
+    </header>
+
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto space-y-6">
+
+        <!-- TAB: DASHBOARD -->
+        <div id="tab-dashboard" class="tab-content fade-in space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-blue-950">Dashboard Keuangan Utama</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Ringkasan saldo transparan dan arus kas Masjid Al-Berr Putra.</p>
                 </div>
-                <nav class="space-y-2">
-                    <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl bg-blue-600 text-white font-semibold text-sm"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
-                    <button onclick="switchTab('pemasukan'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-hand-holding-dollar w-5"></i> Pemasukan</button>
-                    <button onclick="switchTab('pengeluaran'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-file-invoice-dollar w-5"></i> Pengeluaran</button>
-                    <button onclick="switchTab('laporan'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-file-alt w-5"></i> Buku Mutasi</button>
-                    <button onclick="switchTab('kamar'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar</button>
-                </nav>
+                <span id="date-updated" class="text-xs bg-blue-100 text-blue-800 font-bold px-4 py-2 rounded-full border border-blue-200 shadow-xs">Diperbarui hari ini</span>
             </div>
             
-            <div class="pt-4 border-t border-blue-900">
-                <div class="flex items-center gap-3 mb-4">
-                    <img id="mobileUserAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full border border-blue-400">
-                    <div class="overflow-hidden">
-                        <p class="text-xs font-semibold text-white truncate" id="mobileUserNameDisplay">User</p>
-                        <p class="text-[10px] text-blue-300 truncate" id="mobileUserEmailDisplay">email@masjid</p>
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="relative z-10">
+                        <span class="text-blue-200 text-xs font-bold tracking-wider uppercase">Total Saldo Akhir Berjalan</span>
+                        <h2 class="text-3xl font-extrabold mt-1 tracking-tight" id="display-saldo">Rp 0</h2>
                     </div>
-                </div>
-                <button onclick="handleLogout()" class="w-full text-red-200 px-3 py-2 bg-red-950/60 rounded-xl border border-red-900 text-xs font-semibold flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Keluar
-                </button>
-            </div>
-        </div>
-        <div class="flex-1" onclick="toggleMobileMenu()"></div>
-    </div>
-
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col h-full hidden overflow-hidden relative bg-gradient-to-br from-blue-950 via-sky-900 to-indigo-950 backdrop-blur-sm md:rounded-l-3xl shadow-2xl" id="mainApp">
-        <!-- Mobile Header Bar -->
-        <header class="md:hidden bg-blue-950 text-white p-4 flex justify-between items-center z-10 shadow-md shrink-0">
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-mosque"></i></div>
-                <h2 class="font-bold text-sm">Masjid Al-Berr Putra</h2>
-            </div>
-            <button onclick="toggleMobileMenu()" class="text-white focus:outline-none p-2 rounded-lg bg-blue-900/80">
-                <i class="fas fa-bars text-lg"></i>
-            </button>
-        </header>
-
-        <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto space-y-6">
-
-            <!-- TAB: DASHBOARD -->
-            <div id="tab-dashboard" class="tab-content fade-in space-y-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
-                    <div>
-                        <h1 class="text-2xl font-extrabold text-blue-950">Dashboard Keuangan Utama</h1>
-                        <p class="text-gray-500 text-sm mt-0.5">Ringkasan saldo transparan dan arus kas Masjid Al-Berr Putra.</p>
+                    <div class="relative z-10 mt-6 flex items-center gap-2 text-xs font-medium text-blue-200">
+                        <i class="fas fa-cloud text-blue-300"></i> Tersinkronisasi Online (Firebase)
                     </div>
-                    <span id="date-updated" class="text-xs bg-blue-100 text-blue-800 font-bold px-4 py-2 rounded-full border border-blue-200 shadow-xs">Diperbarui hari ini</span>
+                    <i class="fas fa-wallet absolute -bottom-6 -right-6 text-9xl text-white/10 transform -rotate-12 pointer-events-none"></i>
                 </div>
                 
-                <!-- Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
-                        <div class="relative z-10">
-                            <span class="text-blue-200 text-xs font-bold tracking-wider uppercase">Total Saldo Akhir Berjalan</span>
-                            <h2 class="text-3xl font-extrabold mt-1 tracking-tight" id="display-saldo">Rp 0</h2>
-                        </div>
-                        <div class="relative z-10 mt-6 flex items-center gap-2 text-xs font-medium text-blue-200">
-                            <i class="fas fa-cloud text-blue-300"></i> Tersinkronisasi Online (Firebase)
-                        </div>
-                        <i class="fas fa-wallet absolute -bottom-6 -right-6 text-9xl text-white/10 transform -rotate-12 pointer-events-none"></i>
-                    </div>
-                    
-                    <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pemasukan Bulan Ini</span>
-                                <h3 class="text-2xl font-extrabold text-blue-900 mt-1" id="display-in-month">Rp 0</h3>
-                            </div>
-                            <div class="bg-blue-100 p-3 rounded-2xl text-blue-700"><i class="fas fa-arrow-down-long text-lg"></i></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pengeluaran Bulan Ini</span>
-                                <h3 class="text-2xl font-extrabold text-indigo-900 mt-1" id="display-out-month">Rp 0</h3>
-                            </div>
-                            <div class="bg-indigo-100 p-3 rounded-2xl text-indigo-700"><i class="fas fa-arrow-up-long text-lg"></i></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6">
-                        <h3 class="font-extrabold text-blue-950 mb-4"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas Bulanan</h3>
-                        <div class="h-64 flex items-center justify-center bg-blue-50/60 rounded-2xl p-2">
-                            <canvas id="cashflowChart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
-                        <h3 class="font-extrabold text-blue-950 mb-1"><i class="fas fa-chart-pie text-indigo-600 mr-2"></i> Distribusi Pengeluaran</h3>
-                        <p class="text-xs text-gray-500 mb-3">Berdasarkan kategori pos biaya.</p>
-                        <div class="h-56 flex-1 relative my-2 flex items-center justify-center">
-                            <canvas id="expenseDonutChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: PEMASUKAN -->
-            <div id="tab-pemasukan" class="tab-content hidden fade-in">
-                <div class="max-w-2xl mx-auto">
-                    <div class="mb-6 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
-                        <h1 class="text-2xl font-extrabold text-blue-950">Catat Pemasukan Kas</h1>
-                        <p class="text-gray-500 text-sm mt-0.5">Formulir penerimaan infaq, shadaqah, atau donatur kamar.</p>
-                    </div>
-                    
-                    <form id="formPemasukan" onsubmit="handlePemasukan(event)" class="bg-white/95 rounded-3xl shadow-sm border border-blue-200 p-6 md:p-8 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Tanggal Penyetoran</label>
-                                <input type="date" id="in_tanggal" required class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pemasukan</label>
-                                <select id="in_kategori" required onchange="toggleCustomCategory('in')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-                                    <option value="Infaq Kotak Jumat">Infaq Kotak Jumat</option>
-                                    <option value="Donatur Rutin Kamar">Donatur Rutin Kamar</option>
-                                    <option value="Hamba Allah">Hamba Allah (Anonim)</option>
-                                    <option value="Sumbangan Santri">Sumbangan Santri / Warga</option>
-                                    <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="in_custom_category_wrapper" class="hidden">
-                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Baru</label>
-                            <input type="text" id="in_custom_kategori" placeholder="Sumbangan Khusus..." class="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
-                        </div>
-
-                        <div class="bg-blue-50/70 p-5 rounded-2xl border border-blue-200/60 space-y-4">
-                            <h4 class="text-xs font-extrabold text-blue-950 uppercase flex items-center gap-2"><i class="fas fa-user-check text-blue-600"></i> Detail Penyetor & Penerima</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Penyetor</label>
-                                    <input type="text" id="in_nama" placeholder="Contoh: Bpk. Fulan" required class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Kamar / Blok</label>
-                                    <input type="text" id="in_kamar" placeholder="Contoh: Kamar 12" required class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima (Petugas)</label>
-                                <input type="text" id="in_penerima" value="Bendahara Al-Berr" required class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-bold text-blue-900 focus:ring-2 focus:ring-blue-600 outline-none">
-                            </div>
-                        </div>
-
+                <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
                         <div>
-                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Nominal (Rp)</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center font-extrabold text-blue-600">Rp</span>
-                                <input type="number" id="in_nominal" min="1" required placeholder="0" class="w-full pl-12 pr-4 py-3.5 text-xl font-extrabold bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-blue-950">
-                            </div>
+                            <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pemasukan Bulan Ini</span>
+                            <h3 class="text-2xl font-extrabold text-blue-900 mt-1" id="display-in-month">Rp 0</h3>
                         </div>
-                        
+                        <div class="bg-blue-100 p-3 rounded-2xl text-blue-700"><i class="fas fa-arrow-down-long text-lg"></i></div>
+                    </div>
+                </div>
+
+                <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
                         <div>
-                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Keterangan Tambahan</label>
-                            <textarea id="in_keterangan" rows="2" placeholder="Catatan..." class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-medium"></textarea>
+                            <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pengeluaran Bulan Ini</span>
+                            <h3 class="text-2xl font-extrabold text-indigo-900 mt-1" id="display-out-month">Rp 0</h3>
                         </div>
-
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex justify-center items-center gap-2">
-                            <i class="fas fa-save"></i> Simpan Pemasukan
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- TAB: PENGELUARAN -->
-            <div id="tab-pengeluaran" class="tab-content hidden fade-in">
-                <div class="max-w-2xl mx-auto">
-                    <div class="mb-6 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
-                        <h1 class="text-2xl font-extrabold text-blue-950">Catat Pengeluaran Kas</h1>
-                        <p class="text-gray-500 text-sm mt-0.5">Pencatatan biaya operasional dan perawatan masjid.</p>
-                    </div>
-                    
-                    <form id="formPengeluaran" onsubmit="handlePengeluaran(event)" class="bg-white/95 rounded-3xl shadow-sm border border-blue-200 p-6 md:p-8 space-y-6">
-                        <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200 flex items-center gap-3">
-                            <div class="bg-blue-600 text-white p-2.5 rounded-xl"><i class="fas fa-wallet"></i></div>
-                            <p class="text-xs text-blue-950">Saldo aktif saat ini: <strong class="text-blue-700 text-sm font-bold" id="cek-saldo-out">Rp 0</strong></p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Tanggal Pengeluaran</label>
-                                <input type="date" id="out_tanggal" required class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pengeluaran</label>
-                                <select id="out_kategori" required onchange="toggleCustomCategory('out')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-                                    <option value="Operasional Rutin">Operasional (Listrik, Air)</option>
-                                    <option value="Honorarium">Honorarium (Imam, Khatib)</option>
-                                    <option value="Pemeliharaan">Pemeliharaan & Perbaikan</option>
-                                    <option value="Konsumsi Kajian">Konsumsi Kajian / Kegiatan</option>
-                                    <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="out_custom_category_wrapper" class="hidden">
-                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Baru</label>
-                            <input type="text" id="out_custom_kategori" placeholder="Pembelian Karpet..." class="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Nominal Dikeluarkan (Rp)</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center font-extrabold text-indigo-600">Rp</span>
-                                <input type="number" id="out_nominal" min="1" required placeholder="0" class="w-full pl-12 pr-4 py-3.5 text-xl font-extrabold bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none text-indigo-950">
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Rincian Pengeluaran</label>
-                            <textarea id="out_keterangan" rows="3" required placeholder="Catatan barang/jasa..." class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-medium"></textarea>
-                        </div>
-
-                        <button type="submit" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-700/30 transition-all flex justify-center items-center gap-2">
-                            <i class="fas fa-file-invoice-dollar"></i> Catat Pengeluaran
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- TAB: LAPORAN (Buku Mutasi) -->
-            <div id="tab-laporan" class="tab-content hidden fade-in flex flex-col h-full space-y-4">
-                <div class="flex flex-col lg:flex-row justify-between items-start gap-4 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
-                    <div>
-                        <h1 class="text-2xl font-extrabold text-blue-950">Buku Mutasi Kas</h1>
-                        <p class="text-gray-500 text-sm mt-0.5">Histori transaksi lengkap dengan Saldo Berjalan per baris.</p>
-                    </div>
-                    
-                    <div class="flex flex-col gap-3 w-full lg:w-auto">
-                        <!-- Top Row: Filters & Exports -->
-                        <div class="flex flex-wrap gap-2.5 w-full lg:w-auto justify-start lg:justify-end">
-                            <select id="filterMonth" class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-600" onchange="renderTable()">
-                                <option value="all">Semua Bulan</option>
-                            </select>
-                            <select id="filterType" class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-600" onchange="renderTable()">
-                                <option value="all">Semua Transaksi</option>
-                                <option value="in">Pemasukan Saja</option>
-                                <option value="out">Pengeluaran Saja</option>
-                            </select>
-                            <button onclick="openPdfModal()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                                <i class="fas fa-file-pdf"></i> PDF
-                            </button>
-                            <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                                <i class="fas fa-file-excel"></i> Excel
-                            </button>
-                        </div>
-                        
-                        <!-- Bottom Row: Backup & Restore -->
-                        <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end pt-3 border-t border-blue-100">
-                            <input type="file" id="importBackupFile" accept=".json, .xlsx, .xls" class="hidden" onchange="handleImportData(event)">
-                            <button onclick="document.getElementById('importBackupFile').click()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2" title="Masukkan file Excel/JSON lama">
-                                <i class="fas fa-file-import"></i> Pulihkan Data (JSON/Excel)
-                            </button>
-                            <button onclick="exportBackupJSON()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2" title="Simpan sebagai Backup JSON">
-                                <i class="fas fa-database"></i> Backup Database (JSON)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white/95 rounded-3xl shadow-sm border border-blue-200 overflow-hidden flex-1 flex flex-col min-h-[400px]">
-                    <div class="overflow-x-auto flex-1">
-                        <table class="w-full text-left border-collapse zebra-table" id="dataTable">
-                            <thead class="bg-blue-900 text-white text-xs uppercase tracking-wider sticky top-0">
-                                <tr>
-                                    <th class="p-4 font-bold whitespace-nowrap">Tanggal</th>
-                                    <th class="p-4 font-bold">Kategori</th>
-                                    <th class="p-4 font-bold">Penyetor / Kamar</th>
-                                    <th class="p-4 font-bold">Penerima (Petugas)</th>
-                                    <th class="p-4 font-bold text-right">Debit (Masuk)</th>
-                                    <th class="p-4 font-bold text-right">Kredit (Keluar)</th>
-                                    <th class="p-4 font-bold text-right">Saldo Akhir</th>
-                                    <th class="p-4 font-bold text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody" class="text-sm text-gray-700 divide-y divide-blue-50">
-                                <!-- Rendered via JS -->
-                            </tbody>
-                        </table>
+                        <div class="bg-indigo-100 p-3 rounded-2xl text-indigo-700"><i class="fas fa-arrow-up-long text-lg"></i></div>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB: KAMAR STATISTIK -->
-            <div id="tab-kamar" class="tab-content hidden fade-in space-y-6">
-                <div class="bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-extrabold text-blue-950"><i class="fas fa-door-open text-blue-600 mr-2"></i> Analisis Kamar & Asrama</h1>
-                        <p class="text-gray-500 text-sm mt-0.5">Peringkat kontribusi infaq per kamar.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
-                        <h3 class="font-extrabold text-blue-950 mb-1">Proporsi Infaq</h3>
-                        <div class="h-64 flex-1 relative my-2 flex items-center justify-center">
-                            <canvas id="roomDonutChart"></canvas>
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                        <h3 class="font-extrabold text-blue-950"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas</h3>
+                        <!-- Toggle Button for Per Pekan / Per Minggu -->
+                        <div class="bg-blue-50 p-1 rounded-xl border border-blue-200 flex gap-1">
+                            <button onclick="setChartMode('weekly')" id="btn-mode-weekly" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-xs">Per Pekan (Minggu Ini)</button>
+                            <button onclick="setChartMode('monthly')" id="btn-mode-monthly" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-blue-900 hover:bg-blue-100">Per Bulan</button>
                         </div>
                     </div>
-
-                    <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 overflow-x-auto">
-                        <h3 class="font-extrabold text-blue-950 mb-4"><i class="fas fa-trophy text-amber-500"></i> Peringkat Infaq Kamar Teraktif</h3>
-                        <table class="w-full text-left border-collapse zebra-table rounded-2xl overflow-hidden">
-                            <thead class="bg-blue-900 text-white text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-3.5 font-bold text-center w-16">Rank</th>
-                                    <th class="p-3.5 font-bold">Kamar / Blok</th>
-                                    <th class="p-3.5 font-bold text-center">Frekuensi</th>
-                                    <th class="p-3.5 font-bold text-right">Total Nominal</th>
-                                </tr>
-                            </thead>
-                            <tbody id="roomRankingTable" class="text-sm text-gray-700 divide-y divide-blue-50">
-                                <!-- Rendered via JS -->
-                            </tbody>
-                        </table>
+                    <div class="h-64 flex items-center justify-center bg-blue-50/60 rounded-2xl p-2">
+                        <canvas id="cashflowChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
+                    <h3 class="font-extrabold text-blue-950 mb-1"><i class="fas fa-chart-pie text-indigo-600 mr-2"></i> Distribusi Pengeluaran</h3>
+                    <p class="text-xs text-gray-500 mb-3">Berdasarkan kategori pos biaya.</p>
+                    <div class="h-56 flex-1 relative my-2 flex items-center justify-center">
+                        <canvas id="expenseDonutChart"></canvas>
                     </div>
                 </div>
             </div>
-
         </div>
-    </main>
 
-    <!-- PDF MODAL -->
-    <div id="pdfModal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-blue-200">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="font-extrabold text-blue-950 text-lg flex items-center gap-2"><i class="fas fa-file-pdf text-red-600"></i> Cetak PDF Laporan</h3>
-                <button onclick="closePdfModal()" class="text-gray-400 hover:text-gray-700"><i class="fas fa-times text-lg"></i></button>
+        <!-- TAB: PEMASUKAN -->
+        <div id="tab-pemasukan" class="tab-content hidden fade-in">
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
+                    <h1 class="text-2xl font-extrabold text-blue-950">Catat Pemasukan Kas</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Formulir penerimaan infaq, shadaqah, atau donatur kamar.</p>
+                </div>
+                
+                <form id="formPemasukan" onsubmit="handlePemasukan(event)" class="bg-white/95 rounded-3xl shadow-sm border border-blue-200 p-6 md:p-8 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Tanggal Penyetoran</label>
+                            <input type="date" id="in_tanggal" required class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pemasukan</label>
+                            <select id="in_kategori" required onchange="toggleCustomCategory('in')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
+                                <option value="Infaq Kotak Jumat">Infaq Kotak Jumat</option>
+                                <option value="Donatur Rutin Kamar">Donatur Rutin Kamar</option>
+                                <option value="Hamba Allah">Hamba Allah (Anonim)</option>
+                                <option value="Sumbangan Santri">Sumbangan Santri / Warga</option>
+                                <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="in_custom_category_wrapper" class="hidden">
+                        <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Baru</label>
+                        <input type="text" id="in_custom_kategori" placeholder="Sumbangan Khusus..." class="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
+                    </div>
+
+                    <div class="bg-blue-50/70 p-5 rounded-2xl border border-blue-200/60 space-y-4">
+                        <h4 class="text-xs font-extrabold text-blue-950 uppercase flex items-center gap-2"><i class="fas fa-user-check text-blue-600"></i> Detail Penyetor & Penerima</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Penyetor</label>
+                                <input type="text" id="in_nama" placeholder="Contoh: Bpk. Fulan" required class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Kamar / Blok</label>
+                                <input type="text" id="in_kamar" placeholder="Contoh: Kamar 12" required class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima (Petugas)</label>
+                            <input type="text" id="in_penerima" value="Bendahara Al-Berr" required class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-bold text-blue-900 focus:ring-2 focus:ring-blue-600 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Nominal (Rp)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center font-extrabold text-blue-600">Rp</span>
+                            <input type="number" id="in_nominal" min="1" required placeholder="0" class="w-full pl-12 pr-4 py-3.5 text-xl font-extrabold bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-blue-950">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Keterangan Tambahan</label>
+                        <textarea id="in_keterangan" rows="2" placeholder="Catatan..." class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-medium"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex justify-center items-center gap-2">
+                        <i class="fas fa-save"></i> Simpan Pemasukan
+                    </button>
+                </form>
             </div>
-            
-            <div class="space-y-4">
+        </div>
+
+        <!-- TAB: PENGELUARAN -->
+        <div id="tab-pengeluaran" class="tab-content hidden fade-in">
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
+                    <h1 class="text-2xl font-extrabold text-blue-950">Catat Pengeluaran Kas</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Pencatatan biaya operasional dan perawatan masjid.</p>
+                </div>
+                
+                <form id="formPengeluaran" onsubmit="handlePengeluaran(event)" class="bg-white/95 rounded-3xl shadow-sm border border-blue-200 p-6 md:p-8 space-y-6">
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200 flex items-center gap-3">
+                        <div class="bg-blue-600 text-white p-2.5 rounded-xl"><i class="fas fa-wallet"></i></div>
+                        <p class="text-xs text-blue-950">Saldo aktif saat ini: <strong class="text-blue-700 text-sm font-bold" id="cek-saldo-out">Rp 0</strong></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Tanggal Pengeluaran</label>
+                            <input type="date" id="out_tanggal" required class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pengeluaran</label>
+                            <select id="out_kategori" required onchange="toggleCustomCategory('out')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
+                                <option value="Operasional Rutin">Operasional (Listrik, Air)</option>
+                                <option value="Honorarium">Honorarium (Imam, Khatib)</option>
+                                <option value="Pemeliharaan">Pemeliharaan & Perbaikan</option>
+                                <option value="Konsumsi Kajian">Konsumsi Kajian / Kegiatan</option>
+                                <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="out_custom_category_wrapper" class="hidden">
+                        <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Baru</label>
+                        <input type="text" id="out_custom_kategori" placeholder="Pembelian Karpet..." class="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Nominal Dikeluarkan (Rp)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center font-extrabold text-indigo-600">Rp</span>
+                            <input type="number" id="out_nominal" min="1" required placeholder="0" class="w-full pl-12 pr-4 py-3.5 text-xl font-extrabold bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none text-indigo-950">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Rincian Pengeluaran</label>
+                        <textarea id="out_keterangan" rows="3" required placeholder="Catatan barang/jasa..." class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-medium"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-700/30 transition-all flex justify-center items-center gap-2">
+                        <i class="fas fa-file-invoice-dollar"></i> Catat Pengeluaran
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB: LAPORAN (Buku Mutasi) -->
+        <div id="tab-laporan" class="tab-content hidden fade-in flex flex-col h-full space-y-4">
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-4 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Periode Laporan</label>
-                    <select id="pdfPeriod" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-600 text-sm" onchange="togglePdfMonthInput()">
-                        <option value="all">Semua Waktu (Keseluruhan Data)</option>
-                        <option value="monthly">Bulan Tertentu Saja</option>
-                    </select>
+                    <h1 class="text-2xl font-extrabold text-blue-950">Buku Mutasi Kas</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Histori transaksi lengkap dengan Saldo Berjalan per baris.</p>
                 </div>
-                <div id="pdfMonthContainer" class="hidden">
-                    <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Pilih Bulan & Tahun</label>
-                    <input type="month" id="pdfMonthInput" class="w-full px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-xl font-bold text-blue-950 outline-none text-sm">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-2xl border border-blue-200">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Pihak 1 (Kiri)</label>
-                        <input type="text" id="pdfSignRole1" value="Takmir Masjid" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 mb-1.5 outline-none">
-                        <input type="text" id="pdfSignName1" placeholder="Nama..." value="H. Abdullah, S.Pd.I" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-semibold outline-none">
+                
+                <div class="flex flex-col gap-3 w-full lg:w-auto">
+                    <!-- Top Row: Filters & Exports -->
+                    <div class="flex flex-wrap gap-2.5 w-full lg:w-auto justify-start lg:justify-end">
+                        <select id="filterMonth" class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-600" onchange="renderTable()">
+                            <option value="all">Semua Bulan</option>
+                        </select>
+                        <select id="filterType" class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-600" onchange="renderTable()">
+                            <option value="all">Semua Transaksi</option>
+                            <option value="in">Pemasukan Saja</option>
+                            <option value="out">Pengeluaran Saja</option>
+                        </select>
+                        <button onclick="openPdfModal()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Pihak 2 (Kanan)</label>
-                        <input type="text" id="pdfSignRole2" value="Kepala Pondok" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 mb-1.5 outline-none">
-                        <input type="text" id="pdfSignName2" placeholder="Nama..." value="K.H. Ahmad Dahlan" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-semibold outline-none">
+                    
+                    <!-- Bottom Row: Backup & Restore -->
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end pt-3 border-t border-blue-100">
+                        <input type="file" id="importBackupFile" accept=".json, .xlsx, .xls" class="hidden" onchange="handleImportData(event)">
+                        <button onclick="document.getElementById('importBackupFile').click()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2" title="Masukkan file Excel/JSON lama">
+                            <i class="fas fa-file-import"></i> Pulihkan Data (JSON/Excel)
+                        </button>
+                        <button onclick="exportBackupJSON()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2" title="Simpan sebagai Backup JSON">
+                            <i class="fas fa-database"></i> Backup Database (JSON)
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="flex gap-3 pt-6">
-                <button onclick="closePdfModal()" class="w-1/2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-all text-sm">Batal</button>
-                <button onclick="generatePDF()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2">
-                    <i class="fas fa-download"></i> Buat Dokumen PDF
-                </button>
+            <div class="bg-white/95 rounded-3xl shadow-sm border border-blue-200 overflow-hidden flex-1 flex flex-col min-h-[400px]">
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left border-collapse zebra-table" id="dataTable">
+                        <thead class="bg-blue-900 text-white text-xs uppercase tracking-wider sticky top-0">
+                            <tr>
+                                <th class="p-4 font-bold whitespace-nowrap">Tanggal</th>
+                                <th class="p-4 font-bold">Kategori</th>
+                                <th class="p-4 font-bold">Penyetor / Kamar</th>
+                                <th class="p-4 font-bold">Penerima (Petugas)</th>
+                                <th class="p-4 font-bold text-right">Debit (Masuk)</th>
+                                <th class="p-4 font-bold text-right">Kredit (Keluar)</th>
+                                <th class="p-4 font-bold text-right">Saldo Akhir</th>
+                                <th class="p-4 font-bold text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-sm text-gray-700 divide-y divide-blue-50">
+                            <!-- Rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+
+        <!-- TAB: KAMAR STATISTIK -->
+        <div id="tab-kamar" class="tab-content hidden fade-in space-y-6">
+            <div class="bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-blue-950"><i class="fas fa-door-open text-blue-600 mr-2"></i> Analisis Kamar & Asrama</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Peringkat kontribusi infaq per kamar.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
+                    <h3 class="font-extrabold text-blue-950 mb-1">Proporsi Infaq</h3>
+                    <div class="h-64 flex-1 relative my-2 flex items-center justify-center">
+                        <canvas id="roomDonutChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 overflow-x-auto">
+                    <h3 class="font-extrabold text-blue-950 mb-4"><i class="fas fa-trophy text-amber-500"></i> Peringkat Infaq Kamar Teraktif</h3>
+                    <table class="w-full text-left border-collapse zebra-table rounded-2xl overflow-hidden">
+                        <thead class="bg-blue-900 text-white text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3.5 font-bold text-center w-16">Rank</th>
+                                <th class="p-3.5 font-bold">Kamar / Blok</th>
+                                <th class="p-3.5 font-bold text-center">Frekuensi</th>
+                                <th class="p-3.5 font-bold text-right">Total Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roomRankingTable" class="text-sm text-gray-700 divide-y divide-blue-50">
+                            <!-- Rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- PDF MODAL -->
+<div id="pdfModal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-blue-200">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="font-extrabold text-blue-950 text-lg flex items-center gap-2"><i class="fas fa-file-pdf text-red-600"></i> Cetak PDF Laporan</h3>
+            <button onclick="closePdfModal()" class="text-gray-400 hover:text-gray-700"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Periode Laporan</label>
+                <select id="pdfPeriod" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-600 text-sm" onchange="togglePdfMonthInput()">
+                    <option value="all">Semua Waktu (Keseluruhan Data)</option>
+                    <option value="monthly">Bulan Tertentu Saja</option>
+                </select>
+            </div>
+            <div id="pdfMonthContainer" class="hidden">
+                <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Pilih Bulan & Tahun</label>
+                <input type="month" id="pdfMonthInput" class="w-full px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-xl font-bold text-blue-950 outline-none text-sm">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-2xl border border-blue-200">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Pihak 1 (Kiri)</label>
+                    <input type="text" id="pdfSignRole1" value="Takmir Masjid" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 mb-1.5 outline-none">
+                    <input type="text" id="pdfSignName1" placeholder="Nama..." value="H. Abdullah, S.Pd.I" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-semibold outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-blue-900 mb-1">Pihak 2 (Kanan)</label>
+                    <input type="text" id="pdfSignRole2" value="Kepala Pondok" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 mb-1.5 outline-none">
+                    <input type="text" id="pdfSignName2" placeholder="Nama..." value="K.H. Ahmad Dahlan" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-semibold outline-none">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-3 pt-6">
+            <button onclick="closePdfModal()" class="w-1/2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-all text-sm">Batal</button>
+            <button onclick="generatePDF()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-download"></i> Buat Dokumen PDF
+            </button>
         </div>
     </div>
+</div>
 
-    <script>
-        // --- DATA & STATE ---
-        let transactions = [];
-        let currentBalance = 0;
-        let auth, db, currentUser = null;
-        let unsubscribe = null;
+<script>
+    // --- DATA & STATE ---
+    let transactions = [];
+    let currentBalance = 0;
+    let auth, db, currentUser = null;
+    let unsubscribe = null;
+    let currentChartMode = 'weekly'; // 'weekly' or 'monthly'
 
-        // Chart Instances
-        let cashflowChartInstance = null;
-        let expenseDonutInstance = null;
-        let roomDonutInstance = null;
+    // Chart Instances
+    let cashflowChartInstance = null;
+    let expenseDonutInstance = null;
+    let roomDonutInstance = null;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC1uIoju0A67l_BiXOW2VIoZBeUvWR7oPw",
-            authDomain: "keuangan-masjid-alberr-putra.firebaseapp.com",
-            projectId: "keuangan-masjid-alberr-putra",
-            storageBucket: "keuangan-masjid-alberr-putra.firebasestorage.app",
-            messagingSenderId: "546797737269",
-            appId: "1:546797737269:web:7dc95050749a60cf42e87c",
-            measurementId: "G-D6NYZCZFLL"
-        };
-        const COLLECTION_NAME = "mutasi_kas";
+    const firebaseConfig = {
+        apiKey: "AIzaSyC1uIoju0A67l_BiXOW2VIoZBeUvWR7oPw",
+        authDomain: "keuangan-masjid-alberr-putra.firebaseapp.com",
+        projectId: "keuangan-masjid-alberr-putra",
+        storageBucket: "keuangan-masjid-alberr-putra.firebasestorage.app",
+        messagingSenderId: "546797737269",
+        appId: "1:546797737269:web:7dc95050749a60cf42e87c",
+        measurementId: "G-D6NYZCZFLL"
+    };
+    const COLLECTION_NAME = "mutasi_kas";
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const mod = window.firebaseAppModules;
-            if (mod && firebaseConfig.apiKey) {
-                try {
-                    const app = mod.initializeApp(firebaseConfig);
-                    auth = mod.getAuth(app);
-                    db = mod.getFirestore(app);
+    window.addEventListener('DOMContentLoaded', () => {
+        const mod = window.firebaseAppModules;
+        if (mod && firebaseConfig.apiKey) {
+            try {
+                const app = mod.initializeApp(firebaseConfig);
+                auth = mod.getAuth(app);
+                db = mod.getFirestore(app);
 
-                    mod.onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            currentUser = user;
-                            handlePostLoginUI(user);
-                            listenToCloudData();
-                        } else {
-                            currentUser = null;
-                            showLoginScreen();
-                        }
-                    });
-                } catch (e) {
-                    showCustomAlert("Gagal inisialisasi Firebase. Periksa koneksi atau config.", "error");
-                }
-            } else {
-                showCustomAlert("Modul Firebase tidak tersedia.", "error");
+                mod.onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        handlePostLoginUI(user);
+                        listenToCloudData();
+                    } else {
+                        currentUser = null;
+                        showLoginScreen();
+                    }
+                });
+            } catch (e) {
+                showCustomAlert("Gagal inisialisasi Firebase. Periksa koneksi atau config.", "error");
             }
-            setDefaultDates();
-        });
+        } else {
+            showCustomAlert("Modul Firebase tidak tersedia.", "error");
+        }
+        setDefaultDates();
+    });
 
-       async function handleGoogleLogin() {
-            const mod = window.firebaseAppModules;
-            const errorEl = document.getElementById('loginErrorMsg');
-            errorEl.classList.add('hidden');
+   async function handleGoogleLogin() {
+        const mod = window.firebaseAppModules;
+        const errorEl = document.getElementById('loginErrorMsg');
+        errorEl.classList.add('hidden');
 
-            if (auth && mod) {
-                try {
-                    const provider = new mod.GoogleAuthProvider();
-                    provider.setCustomParameters({ prompt: 'select_account' });
-                    await mod.signInWithPopup(auth, provider);
-                } catch (err) {
-                    console.error("Google Login Error:", err);
-                    errorEl.textContent = "Gagal login dengan Google: " + (err.message || "Pastikan pop-up diizinkan.");
-                    errorEl.classList.remove('hidden');
-                }
-            } else {
-                errorEl.textContent = "Modul autentikasi Firebase tidak tersedia.";
+        if (auth && mod) {
+            try {
+                const provider = new mod.GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+                await mod.signInWithPopup(auth, provider);
+            } catch (err) {
+                console.error("Google Login Error:", err);
+                errorEl.textContent = "Gagal login dengan Google: " + (err.message || "Pastikan pop-up diizinkan.");
                 errorEl.classList.remove('hidden');
             }
+        } else {
+            errorEl.textContent = "Modul autentikasi Firebase tidak tersedia.";
+            errorEl.classList.add('hidden');
         }
+    }
 
-        async function handleLogout() {
-            const mod = window.firebaseAppModules;
-            if (unsubscribe) unsubscribe();
-            if (auth && mod) {
-                try { await mod.signOut(auth); } catch(e) {}
-            }
-            showLoginScreen();
+    async function handleLogout() {
+        const mod = window.firebaseAppModules;
+        if (unsubscribe) unsubscribe();
+        if (auth && mod) {
+            try { await mod.signOut(auth); } catch(e) {}
         }
+        showLoginScreen();
+    }
 
-        function showLoginScreen() {
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('sidebar').classList.add('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-        }
+    function showLoginScreen() {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('sidebar').classList.add('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+    }
 
-        function handlePostLoginUI(user) {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('sidebar').classList.remove('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
+    function handlePostLoginUI(user) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('sidebar').classList.remove('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
 
-            const name = user.displayName || 'Bendahara Masjid';
-            const email = user.email || '';
-            const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff`;
+        const name = user.displayName || 'Bendahara Masjid';
+        const email = user.email || '';
+        const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff`;
 
-            document.getElementById('userNameDisplay').textContent = name;
-            document.getElementById('userEmailDisplay').textContent = email;
-            document.getElementById('userAvatar').src = photo;
+        document.getElementById('userNameDisplay').textContent = name;
+        document.getElementById('userEmailDisplay').textContent = email;
+        document.getElementById('userAvatar').src = photo;
 
-            document.getElementById('mobileUserNameDisplay').textContent = name;
-            document.getElementById('mobileUserEmailDisplay').textContent = email;
-            document.getElementById('mobileUserAvatar').src = photo;
+        document.getElementById('mobileUserNameDisplay').textContent = name;
+        document.getElementById('mobileUserEmailDisplay').textContent = email;
+        document.getElementById('mobileUserAvatar').src = photo;
 
-            switchTab('dashboard');
-        }
+        switchTab('dashboard');
+    }
 
-        function listenToCloudData() {
-            const mod = window.firebaseAppModules;
-            if (!db || !mod) return;
+    function listenToCloudData() {
+        const mod = window.firebaseAppModules;
+        if (!db || !mod) return;
 
-            const q = mod.query(mod.collection(db, COLLECTION_NAME), mod.orderBy('timestamp', 'asc'));
-            
-            if (unsubscribe) unsubscribe();
-            
-            unsubscribe = mod.onSnapshot(q, (snapshot) => {
-                transactions = [];
-                snapshot.forEach(docSnap => {
-                    transactions.push({ firestoreId: docSnap.id, ...docSnap.data() });
-                });
-                
-                let rolling = 0;
-                transactions.forEach(t => {
-                    if (t.type === 'in') rolling += t.amount;
-                    else if (t.type === 'out') rolling -= t.amount;
-                    t.rollingBalance = rolling;
-                });
-                currentBalance = rolling;
-
-                populateMonthFilter();
-                updateUI();
-            }, (error) => {
-                console.error("Firestore listen error:", error);
-                showCustomAlert("Akses database ditolak. Pastikan aturan database diizinkan.", "error");
+        const q = mod.query(mod.collection(db, COLLECTION_NAME), mod.orderBy('timestamp', 'asc'));
+        
+        if (unsubscribe) unsubscribe();
+        
+        unsubscribe = mod.onSnapshot(q, (snapshot) => {
+            transactions = [];
+            snapshot.forEach(docSnap => {
+                transactions.push({ firestoreId: docSnap.id, ...docSnap.data() });
             });
-        }
-
-        async function saveTransaction(data) {
-            const mod = window.firebaseAppModules;
-            if (!db || !mod) return;
-            try {
-                data.timestamp = new Date(data.date).getTime();
-                await mod.addDoc(mod.collection(db, COLLECTION_NAME), data);
-                showCustomAlert("Transaksi berhasil disimpan ke Cloud!", "success");
-            } catch (e) {
-                console.error("Save error:", e);
-                showCustomAlert("Gagal menyimpan ke cloud.", "error");
-            }
-        }
-
-        async function deleteTransaction(id) {
-            const mod = window.firebaseAppModules;
-            if (!db || !mod) return;
-            try {
-                await mod.deleteDoc(mod.doc(db, COLLECTION_NAME, id));
-                showCustomAlert("Transaksi berhasil dihapus dari Cloud.", "success");
-            } catch (e) {
-                console.error("Delete error:", e);
-                showCustomAlert("Gagal menghapus data.", "error");
-            }
-        }
-
-        function handlePemasukan(e) {
-            e.preventDefault();
-            let cat = document.getElementById('in_kategori').value;
-            if (cat === 'Lainnya') cat = document.getElementById('in_custom_kategori').value || 'Lainnya';
             
-            const data = {
-                date: document.getElementById('in_tanggal').value,
-                type: 'in',
-                category: cat,
-                contributor: `${document.getElementById('in_nama').value} (${document.getElementById('in_kamar').value})`,
-                room: document.getElementById('in_kamar').value,
-                receiver: document.getElementById('in_penerima').value,
-                amount: parseInt(document.getElementById('in_nominal').value),
-                notes: document.getElementById('in_keterangan').value,
-                authorUid: currentUser.uid
-            };
-            
-            saveTransaction(data);
-            e.target.reset();
-            document.getElementById('in_custom_category_wrapper').classList.add('hidden');
-            setDefaultDates();
-            setTimeout(() => switchTab('dashboard'), 1000);
-        }
-
-        function handlePengeluaran(e) {
-            e.preventDefault();
-            const amount = parseInt(document.getElementById('out_nominal').value);
-            if (amount > currentBalance) {
-                showCustomAlert("Saldo tidak mencukupi untuk nominal ini!", "error");
-                return;
-            }
-
-            let cat = document.getElementById('out_kategori').value;
-            if (cat === 'Lainnya') cat = document.getElementById('out_custom_kategori').value || 'Lainnya';
-            
-            const data = {
-                date: document.getElementById('out_tanggal').value,
-                type: 'out',
-                category: cat,
-                contributor: '-',
-                room: '-',
-                receiver: document.getElementById('out_keterangan').value || 'Operasional Masjid',
-                amount: amount,
-                notes: document.getElementById('out_keterangan').value,
-                authorUid: currentUser.uid
-            };
-            
-            saveTransaction(data);
-            e.target.reset();
-            document.getElementById('out_custom_category_wrapper').classList.add('hidden');
-            setDefaultDates();
-            setTimeout(() => switchTab('dashboard'), 1000);
-        }
-
-        // --- BACKUP & RESTORE FUNCTIONS ---
-        function exportBackupJSON() {
-            if(transactions.length === 0) {
-                showCustomAlert("Tidak ada data untuk dibackup", "error");
-                return;
-            }
-            const dataStr = JSON.stringify(transactions, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Backup_Database_AlBerr_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showCustomAlert("File Backup JSON berhasil diunduh!", "success");
-        }
-
-        function handleImportData(event) {
-            const file = event.target.files[0];
-            if(!file) return;
-            
-            const ext = file.name.split('.').pop().toLowerCase();
-            
-            if (ext === 'json') {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        if(!Array.isArray(imported)) throw new Error("Format JSON tidak sesuai");
-                        if(!confirm(`Ditemukan ${imported.length} data transaksi. Mulai impor ke Cloud Database?`)) return;
-                        
-                        showCustomAlert("Mengimpor data JSON ke Cloud...", "success");
-                        const mod = window.firebaseAppModules;
-                        let count = 0;
-                        
-                        for(const item of imported) {
-                            // Bersihkan ID lama Firebase jika ada agar Firebase membuat ID baru
-                            const { firestoreId, rollingBalance, ...cleanData } = item;
-                            
-                            // Pastikan ada authorUid dan timestamp
-                            if (!cleanData.timestamp && cleanData.date) cleanData.timestamp = new Date(cleanData.date).getTime();
-                            if (currentUser) cleanData.authorUid = currentUser.uid;
-
-                            await mod.addDoc(mod.collection(db, COLLECTION_NAME), cleanData);
-                            count++;
-                        }
-                        showCustomAlert(`Selesai! ${count} data berhasil ditambahkan ke Database.`, "success");
-                    } catch(err) {
-                        showCustomAlert("File JSON rusak atau tidak valid.", "error");
-                        console.error(err);
-                    }
-                    event.target.value = ''; // reset input
-                };
-                reader.readAsText(file);
-            } 
-            else if (ext === 'xlsx' || ext === 'xls') {
-                // Membaca Backup dari Excel Aplikasi Lama
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-                        
-                        // Cari baris data (mulai dari setelah Header 'Tanggal', 'Kategori')
-                        let startIdx = 4; // Default export Excel lama di baris ke-4
-                        for(let i=0; i<json.length; i++) {
-                            if(json[i][0] === 'Tanggal' && json[i][1] === 'Kategori') {
-                                startIdx = i + 1;
-                                break;
-                            }
-                        }
-                        
-                        const rows = json.slice(startIdx).filter(r => r.length >= 5);
-                        if(!confirm(`Ditemukan ${rows.length} baris transaksi di Excel. Mulai impor ke Cloud?`)) return;
-                        
-                        showCustomAlert("Mengimpor data Excel ke Cloud...", "success");
-                        const mod = window.firebaseAppModules;
-                        let count = 0;
-                        
-                        for(const row of rows) {
-                            let dateVal = row[0];
-                            // Konversi jika tanggal Excel terbaca sebagai angka seri
-                            if (typeof dateVal === 'number') {
-                                const d = new Date(Math.round((dateVal - 25569)*86400*1000));
-                                dateVal = d.toISOString().split('T')[0];
-                            }
-                            
-                            const typeLabel = row[2]; // Biasanya 'Pemasukan' atau 'Pengeluaran'
-                            const type = typeLabel === 'Pemasukan' ? 'in' : 'out';
-                            const amount = type === 'in' ? parseInt(row[5]||0) : parseInt(row[6]||0);
-                            const contributor = row[3] || '-';
-                            
-                            // Ekstrak nama kamar dari dalam kurung "Nama (Kamar)"
-                            let room = '-';
-                            if (contributor.includes('(') && contributor.includes(')')) {
-                                room = contributor.substring(contributor.indexOf('(')+1, contributor.indexOf(')'));
-                            }
-
-                            const docData = {
-                                date: dateVal,
-                                type: type,
-                                category: row[1] || 'Lainnya',
-                                contributor: contributor,
-                                room: room,
-                                receiver: row[4] || '-',
-                                amount: amount,
-                                notes: 'Diimpor dari file Excel lama',
-                                timestamp: new Date(dateVal).getTime()
-                            };
-
-                            if (currentUser) docData.authorUid = currentUser.uid;
-                            await mod.addDoc(mod.collection(db, COLLECTION_NAME), docData);
-                            count++;
-                        }
-                        showCustomAlert(`Selesai! ${count} data dari Excel masuk ke Database.`, "success");
-                    } catch(err) {
-                        showCustomAlert("Gagal membaca file Excel. Pastikan menggunakan format Export dari aplikasi ini.", "error");
-                        console.error(err);
-                    }
-                    event.target.value = ''; // reset input
-                };
-                reader.readAsArrayBuffer(file);
-            } else {
-                showCustomAlert("Format file tidak didukung! Gunakan .json atau .xlsx", "error");
-                event.target.value = '';
-            }
-        }
-
-        function updateUI() {
-            const currentMonthStr = new Date().toISOString().substring(0, 7);
-            let inMonth = 0;
-            let outMonth = 0;
-            
+            let rolling = 0;
             transactions.forEach(t => {
-                if(t.date.startsWith(currentMonthStr)) {
-                    if (t.type === 'in') inMonth += t.amount;
-                    if (t.type === 'out') outMonth += t.amount;
+                if (t.type === 'in') rolling += t.amount;
+                else if (t.type === 'out') rolling -= t.amount;
+                t.rollingBalance = rolling;
+            });
+            currentBalance = rolling;
+
+            populateMonthFilter();
+            updateUI();
+        }, (error) => {
+            console.error("Firestore listen error:", error);
+            showCustomAlert("Akses database ditolak. Pastikan aturan database diizinkan.", "error");
+        });
+    }
+
+    async function saveTransaction(data) {
+        const mod = window.firebaseAppModules;
+        if (!db || !mod) return;
+        try {
+            data.timestamp = new Date(data.date).getTime();
+            await mod.addDoc(mod.collection(db, COLLECTION_NAME), data);
+            showCustomAlert("Transaksi berhasil disimpan ke Cloud!", "success");
+        } catch (e) {
+            console.error("Save error:", e);
+            showCustomAlert("Gagal menyimpan ke cloud.", "error");
+        }
+    }
+
+    async function deleteTransaction(id) {
+        const mod = window.firebaseAppModules;
+        if (!db || !mod) return;
+        try {
+            await mod.deleteDoc(mod.doc(db, COLLECTION_NAME, id));
+            showCustomAlert("Transaksi berhasil dihapus dari Cloud.", "success");
+        } catch (e) {
+            console.error("Delete error:", e);
+            showCustomAlert("Gagal menghapus data.", "error");
+        }
+    }
+
+    function handlePemasukan(e) {
+        e.preventDefault();
+        let cat = document.getElementById('in_kategori').value;
+        if (cat === 'Lainnya') cat = document.getElementById('in_custom_kategori').value || 'Lainnya';
+        
+        const data = {
+            date: document.getElementById('in_tanggal').value,
+            type: 'in',
+            category: cat,
+            contributor: `${document.getElementById('in_nama').value} (${document.getElementById('in_kamar').value})`,
+            room: document.getElementById('in_kamar').value,
+            receiver: document.getElementById('in_penerima').value,
+            amount: parseInt(document.getElementById('in_nominal').value),
+            notes: document.getElementById('in_keterangan').value,
+            authorUid: currentUser.uid
+        };
+        
+        saveTransaction(data);
+        e.target.reset();
+        document.getElementById('in_custom_category_wrapper').classList.add('hidden');
+        setDefaultDates();
+        setTimeout(() => switchTab('dashboard'), 1000);
+    }
+
+    function handlePengeluaran(e) {
+        e.preventDefault();
+        const amount = parseInt(document.getElementById('out_nominal').value);
+        if (amount > currentBalance) {
+            showCustomAlert("Saldo tidak mencukupi untuk nominal ini!", "error");
+            return;
+        }
+
+        let cat = document.getElementById('out_kategori').value;
+        if (cat === 'Lainnya') cat = document.getElementById('out_custom_kategori').value || 'Lainnya';
+        
+        const data = {
+            date: document.getElementById('out_tanggal').value,
+            type: 'out',
+            category: cat,
+            contributor: '-',
+            room: '-',
+            receiver: document.getElementById('out_keterangan').value || 'Operasional Masjid',
+            amount: amount,
+            notes: document.getElementById('out_keterangan').value,
+            authorUid: currentUser.uid
+        };
+        
+        saveTransaction(data);
+        e.target.reset();
+        document.getElementById('out_custom_category_wrapper').classList.add('hidden');
+        setDefaultDates();
+        setTimeout(() => switchTab('dashboard'), 1000);
+    }
+
+    // --- BACKUP & RESTORE FUNCTIONS ---
+    function exportBackupJSON() {
+        if(transactions.length === 0) {
+            showCustomAlert("Tidak ada data untuk dibackup", "error");
+            return;
+        }
+        const dataStr = JSON.stringify(transactions, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Backup_Database_AlBerr_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showCustomAlert("File Backup JSON berhasil diunduh!", "success");
+    }
+
+    function handleImportData(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        
+        const ext = file.name.split('.').pop().toLowerCase();
+        
+        if (ext === 'json') {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if(!Array.isArray(imported)) throw new Error("Format JSON tidak sesuai");
+                    if(!confirm(`Ditemukan ${imported.length} data transaksi. Mulai impor ke Cloud Database?`)) return;
+                    
+                    showCustomAlert("Mengimpor data JSON ke Cloud...", "success");
+                    const mod = window.firebaseAppModules;
+                    let count = 0;
+                    
+                    for(const item of imported) {
+                        const { firestoreId, rollingBalance, ...cleanData } = item;
+                        if (!cleanData.timestamp && cleanData.date) cleanData.timestamp = new Date(cleanData.date).getTime();
+                        if (currentUser) cleanData.authorUid = currentUser.uid;
+
+                        await mod.addDoc(mod.collection(db, COLLECTION_NAME), cleanData);
+                        count++;
+                    }
+                    showCustomAlert(`Selesai! ${count} data berhasil ditambahkan ke Database.`, "success");
+                } catch(err) {
+                    showCustomAlert("File JSON rusak atau tidak valid.", "error");
+                    console.error(err);
                 }
-            });
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        } 
+        else if (ext === 'xlsx' || ext === 'xls') {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                    
+                    let startIdx = 4;
+                    for(let i=0; i<json.length; i++) {
+                        if(json[i][0] === 'Tanggal' && json[i][1] === 'Kategori') {
+                            startIdx = i + 1;
+                            break;
+                        }
+                    }
+                    
+                    const rows = json.slice(startIdx).filter(r => r.length >= 5);
+                    if(!confirm(`Ditemukan ${rows.length} baris transaksi di Excel. Mulai impor ke Cloud?`)) return;
+                    
+                    showCustomAlert("Mengimpor data Excel ke Cloud...", "success");
+                    const mod = window.firebaseAppModules;
+                    let count = 0;
+                    
+                    for(const row of rows) {
+                        let dateVal = row[0];
+                        if (typeof dateVal === 'number') {
+                            const d = new Date(Math.round((dateVal - 25569)*86400*1000));
+                            dateVal = d.toISOString().split('T')[0];
+                        }
+                        
+                        const typeLabel = row[2];
+                        const type = typeLabel === 'Pemasukan' ? 'in' : 'out';
+                        const amount = type === 'in' ? parseInt(row[5]||0) : parseInt(row[6]||0);
+                        const contributor = row[3] || '-';
+                        
+                        let room = '-';
+                        if (contributor.includes('(') && contributor.includes(')')) {
+                            room = contributor.substring(contributor.indexOf('(')+1, contributor.indexOf(')'));
+                        }
 
-            document.getElementById('display-saldo').textContent = formatRupiah(currentBalance);
-            document.getElementById('cek-saldo-out').textContent = formatRupiah(currentBalance);
-            document.getElementById('display-in-month').textContent = formatRupiah(inMonth);
-            document.getElementById('display-out-month').textContent = formatRupiah(outMonth);
+                        const docData = {
+                            date: dateVal,
+                            type: type,
+                            category: row[1] || 'Lainnya',
+                            contributor: contributor,
+                            room: room,
+                            receiver: row[4] || '-',
+                            amount: amount,
+                            notes: 'Diimpor dari file Excel lama',
+                            timestamp: new Date(dateVal).getTime()
+                        };
 
-            renderTable();
-            renderCharts();
-            renderRoomRankings();
+                        if (currentUser) docData.authorUid = currentUser.uid;
+                        await mod.addDoc(mod.collection(db, COLLECTION_NAME), docData);
+                        count++;
+                    }
+                    showCustomAlert(`Selesai! ${count} data dari Excel masuk ke Database.`, "success");
+                } catch(err) {
+                    showCustomAlert("Gagal membaca file Excel.", "error");
+                    console.error(err);
+                }
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            showCustomAlert("Format file tidak didukung! Gunakan .json atau .xlsx", "error");
+            event.target.value = '';
+        }
+    }
+
+    function updateUI() {
+        const currentMonthStr = new Date().toISOString().substring(0, 7);
+        let inMonth = 0;
+        let outMonth = 0;
+        
+        transactions.forEach(t => {
+            if(t.date.startsWith(currentMonthStr)) {
+                if (t.type === 'in') inMonth += t.amount;
+                if (t.type === 'out') outMonth += t.amount;
+            }
+        });
+
+        document.getElementById('display-saldo').textContent = formatRupiah(currentBalance);
+        document.getElementById('cek-saldo-out').textContent = formatRupiah(currentBalance);
+        document.getElementById('display-in-month').textContent = formatRupiah(inMonth);
+        document.getElementById('display-out-month').textContent = formatRupiah(outMonth);
+
+        renderTable();
+        renderCharts();
+        renderRoomRankings();
+    }
+
+    function populateMonthFilter() {
+        const select = document.getElementById('filterMonth');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="all">Semua Bulan</option>';
+        
+        const months = new Set(transactions.map(t => t.date.substring(0, 7)));
+        const sortedMonths = Array.from(months).sort().reverse();
+        
+        sortedMonths.forEach(ym => {
+            const [y, m] = ym.split('-');
+            const mName = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"][parseInt(m)-1];
+            select.innerHTML += `<option value="${ym}">${mName} ${y}</option>`;
+        });
+        if([...months].includes(currentVal)) select.value = currentVal;
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        const monthFilter = document.getElementById('filterMonth').value;
+        const typeFilter = document.getElementById('filterType').value;
+        
+        let filtered = [...transactions].reverse();
+        
+        if (monthFilter !== 'all') {
+            filtered = filtered.filter(t => t.date.startsWith(monthFilter));
+        }
+        if (typeFilter !== 'all') {
+            filtered = filtered.filter(t => t.type === typeFilter);
         }
 
-        function populateMonthFilter() {
-            const select = document.getElementById('filterMonth');
-            const currentVal = select.value;
-            select.innerHTML = '<option value="all">Semua Bulan</option>';
-            
-            const months = new Set(transactions.map(t => t.date.substring(0, 7))); // YYYY-MM
-            const sortedMonths = Array.from(months).sort().reverse();
-            
-            sortedMonths.forEach(ym => {
-                const [y, m] = ym.split('-');
-                const mName = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"][parseInt(m)-1];
-                select.innerHTML += `<option value="${ym}">${mName} ${y}</option>`;
-            });
-            if([...months].includes(currentVal)) select.value = currentVal;
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Tidak ada data transaksi.</td></tr>`;
+            return;
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        filtered.forEach(t => {
+            const tr = document.createElement('tr');
+            const badge = t.type === 'in' 
+                ? `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold">Infaq Masuk</span>`
+                : `<span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-bold">Biaya Keluar</span>`;
             
-            const monthFilter = document.getElementById('filterMonth').value;
-            const typeFilter = document.getElementById('filterType').value;
+            const debit = t.type === 'in' ? formatRupiah(t.amount) : '-';
+            const kredit = t.type === 'out' ? formatRupiah(t.amount) : '-';
             
-            let filtered = [...transactions].reverse();
-            
-            if (monthFilter !== 'all') {
-                filtered = filtered.filter(t => t.date.startsWith(monthFilter));
-            }
-            if (typeFilter !== 'all') {
-                filtered = filtered.filter(t => t.type === typeFilter);
-            }
+            tr.innerHTML = `
+                <td class="p-4 whitespace-nowrap font-semibold">${formatDateIndo(t.date)}</td>
+                <td class="p-4"><div class="flex flex-col gap-1 items-start"><div>${badge}</div><span class="text-xs text-gray-500 font-medium">${t.category}</span></div></td>
+                <td class="p-4 font-semibold text-blue-950">${t.contributor}</td>
+                <td class="p-4 text-gray-700 font-medium">${t.receiver}</td>
+                <td class="p-4 text-right font-extrabold text-blue-700">${debit}</td>
+                <td class="p-4 text-right font-extrabold text-indigo-700">${kredit}</td>
+                <td class="p-4 text-right font-extrabold text-blue-950">${formatRupiah(t.rollingBalance)}</td>
+                <td class="p-4 text-center">
+                    <button onclick="deleteTransaction('${t.firestoreId}')" class="text-gray-400 hover:text-red-600 transition" title="Hapus"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Tidak ada data transaksi.</td></tr>`;
-                return;
-            }
+    function setChartMode(mode) {
+        currentChartMode = mode;
+        const btnWeekly = document.getElementById('btn-mode-weekly');
+        const btnMonthly = document.getElementById('btn-mode-monthly');
 
-            filtered.forEach(t => {
-                const tr = document.createElement('tr');
-                const badge = t.type === 'in' 
-                    ? `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold">Infaq Masuk</span>`
-                    : `<span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-bold">Biaya Keluar</span>`;
-                
-                const debit = t.type === 'in' ? formatRupiah(t.amount) : '-';
-                const kredit = t.type === 'out' ? formatRupiah(t.amount) : '-';
-                
-                tr.innerHTML = `
-                    <td class="p-4 whitespace-nowrap font-semibold">${formatDateIndo(t.date)}</td>
-                    <td class="p-4"><div class="flex flex-col gap-1 items-start"><div>${badge}</div><span class="text-xs text-gray-500 font-medium">${t.category}</span></div></td>
-                    <td class="p-4 font-semibold text-blue-950">${t.contributor}</td>
-                    <td class="p-4 text-gray-700 font-medium">${t.receiver}</td>
-                    <td class="p-4 text-right font-extrabold text-blue-700">${debit}</td>
-                    <td class="p-4 text-right font-extrabold text-indigo-700">${kredit}</td>
-                    <td class="p-4 text-right font-extrabold text-blue-950">${formatRupiah(t.rollingBalance)}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="deleteTransaction('${t.firestoreId}')" class="text-gray-400 hover:text-red-600 transition" title="Hapus"><i class="fas fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+        if (mode === 'weekly') {
+            btnWeekly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-xs";
+            btnMonthly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-blue-900 hover:bg-blue-100";
+        } else {
+            btnMonthly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-xs";
+            btnWeekly.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-blue-900 hover:bg-blue-100";
         }
+        renderCharts();
+    }
 
-        function renderCharts() {
-            const ctxBar = document.getElementById('cashflowChart');
-            if(ctxBar) {
+    function renderCharts() {
+        const ctxBar = document.getElementById('cashflowChart');
+        if(ctxBar) {
+            let labels = [];
+            let inData = [];
+            let outData = [];
+
+            if (currentChartMode === 'weekly') {
+                // Tampilkan 4-5 pekan terakhir (berdasarkan minggu kalender)
+                const weeklyMap = {};
+                for (let i = 3; i >= 0; i--) {
+                    // Buat rentang minggu ke belakang
+                    const d = new Date();
+                    d.setDate(d.getDate() - (i * 7));
+                    const weekNum = getWeekNumber(d);
+                    const k = `${d.getFullYear()}-W${weekNum}`;
+                    weeklyMap[k] = { label: `Pekan ${4-i} (${d.toLocaleString('id-ID', {month:'short'})})`, in: 0, out: 0 };
+                }
+
+                transactions.forEach(t => {
+                    const tDate = new Date(t.date);
+                    const wNum = getWeekNumber(tDate);
+                    const k = `${tDate.getFullYear()}-W${wNum}`;
+                    if (weeklyMap[k]) {
+                        if (t.type === 'in') weeklyMap[k].in += t.amount;
+                        if (t.type === 'out') weeklyMap[k].out += t.amount;
+                    }
+                });
+
+                labels = Object.values(weeklyMap).map(m => m.label);
+                inData = Object.values(weeklyMap).map(m => m.in);
+                outData = Object.values(weeklyMap).map(m => m.out);
+            } else {
+                // Mode Per Bulan (6 Bulan Terakhir)
                 const monthlyData = {};
                 for(let i=5; i>=0; i--) {
                     const d = new Date(); d.setMonth(d.getMonth() - i);
@@ -957,268 +983,275 @@
                     }
                 });
 
-                const labels = Object.values(monthlyData).map(m => m.label);
-                const inData = Object.values(monthlyData).map(m => m.in);
-                const outData = Object.values(monthlyData).map(m => m.out);
-
-                if(cashflowChartInstance) cashflowChartInstance.destroy();
-                cashflowChartInstance = new Chart(ctxBar, {
-                    type: 'bar',
-                    data: { labels, datasets: [
-                        { label: 'Pemasukan', data: inData, backgroundColor: '#2563eb', borderRadius: 6 },
-                        { label: 'Pengeluaran', data: outData, backgroundColor: '#f97316', borderRadius: 6 }
-                    ]},
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-                });
+                labels = Object.values(monthlyData).map(m => m.label);
+                inData = Object.values(monthlyData).map(m => m.in);
+                outData = Object.values(monthlyData).map(m => m.out);
             }
 
-            const drawDonut = (canvasId, dataFilter, labelMapFn, instanceRef, title) => {
-                const ctx = document.getElementById(canvasId);
-                if(!ctx) return null;
-                
-                const map = {};
-                transactions.filter(dataFilter).forEach(t => {
-                    const l = labelMapFn(t);
-                    map[l] = (map[l] || 0) + t.amount;
-                });
-
-                let labels = Object.keys(map);
-                let data = Object.values(map);
-                
-                if(labels.length === 0) { labels = ['Belum ada data']; data = [1]; }
-
-                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444'];
-                
-                if(instanceRef) instanceRef.destroy();
-                return new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 2 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } } } }
-                });
-            };
-
-            expenseDonutInstance = drawDonut('expenseDonutChart', t => t.type === 'out', t => t.category, expenseDonutInstance, 'Pengeluaran');
-            roomDonutInstance = drawDonut('roomDonutChart', t => t.type === 'in' && t.room && t.room !== '-', t => t.room, roomDonutInstance, 'Kamar');
+            if(cashflowChartInstance) cashflowChartInstance.destroy();
+            cashflowChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels, datasets: [
+                    { label: 'Pemasukan', data: inData, backgroundColor: '#2563eb', borderRadius: 6 },
+                    { label: 'Pengeluaran', data: outData, backgroundColor: '#f97316', borderRadius: 6 }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
         }
 
-        function renderRoomRankings() {
-            const tbody = document.getElementById('roomRankingTable');
-            if(!tbody) return;
+        const drawDonut = (canvasId, dataFilter, labelMapFn, instanceRef) => {
+            const ctx = document.getElementById(canvasId);
+            if(!ctx) return null;
             
             const map = {};
-            transactions.filter(t => t.type === 'in' && t.room && t.room !== '-').forEach(t => {
-                if(!map[t.room]) map[t.room] = { count: 0, total: 0 };
-                map[t.room].count++;
-                map[t.room].total += t.amount;
+            transactions.filter(dataFilter).forEach(t => {
+                const l = labelMapFn(t);
+                map[l] = (map[l] || 0) + t.amount;
             });
 
-            const sorted = Object.keys(map).map(k => ({ room: k, ...map[k] })).sort((a,b) => b.total - a.total);
-            tbody.innerHTML = '';
+            let labels = Object.keys(map);
+            let data = Object.values(map);
+            
+            if(labels.length === 0) { labels = ['Belum ada data']; data = [1]; }
 
-            if (sorted.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-400">Belum ada data donatur kamar.</td></tr>`;
-                return;
-            }
-
-            sorted.forEach((item, i) => {
-                const tr = document.createElement('tr');
-                const badge = i===0 ? 'bg-amber-400 text-white shadow' : i===1 ? 'bg-slate-300' : i===2 ? 'bg-amber-700 text-white' : 'bg-blue-100 text-blue-900';
-                tr.innerHTML = `
-                    <td class="p-3.5 text-center"><span class="w-7 h-7 inline-flex items-center justify-center rounded-full font-bold text-xs ${badge}">${i + 1}</span></td>
-                    <td class="p-3.5 font-bold text-blue-950">${item.room}</td>
-                    <td class="p-3.5 text-center font-semibold text-gray-600">${item.count}x setor</td>
-                    <td class="p-3.5 text-right font-extrabold text-blue-700">${formatRupiah(item.total)}</td>
-                `;
-                tbody.appendChild(tr);
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444'];
+            
+            if(instanceRef) instanceRef.destroy();
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 2 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } } } }
             });
+        };
+
+        expenseDonutInstance = drawDonut('expenseDonutChart', t => t.type === 'out', t => t.category, expenseDonutInstance);
+        roomDonutInstance = drawDonut('roomDonutChart', t => t.type === 'in' && t.room && t.room !== '-', t => t.room, roomDonutInstance);
+    }
+
+    // Helper untuk menghitung nomor pekan dalam tahun
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+        return weekNo;
+    }
+
+    function renderRoomRankings() {
+        const tbody = document.getElementById('roomRankingTable');
+        if(!tbody) return;
+        
+        const map = {};
+        transactions.filter(t => t.type === 'in' && t.room && t.room !== '-').forEach(t => {
+            if(!map[t.room]) map[t.room] = { count: 0, total: 0 };
+            map[t.room].count++;
+            map[t.room].total += t.amount;
+        });
+
+        const sorted = Object.keys(map).map(k => ({ room: k, ...map[k] })).sort((a,b) => b.total - a.total);
+        tbody.innerHTML = '';
+
+        if (sorted.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-400">Belum ada data donatur kamar.</td></tr>`;
+            return;
         }
 
-        function openPdfModal() {
-            const now = new Date();
-            document.getElementById('pdfMonthInput').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            document.getElementById('pdfModal').classList.remove('hidden');
+        sorted.forEach((item, i) => {
+            const tr = document.createElement('tr');
+            const badge = i===0 ? 'bg-amber-400 text-white shadow' : i===1 ? 'bg-slate-300' : i===2 ? 'bg-amber-700 text-white' : 'bg-blue-100 text-blue-900';
+            tr.innerHTML = `
+                <td class="p-3.5 text-center"><span class="w-7 h-7 inline-flex items-center justify-center rounded-full font-bold text-xs ${badge}">${i + 1}</span></td>
+                <td class="p-3.5 font-bold text-blue-950">${item.room}</td>
+                <td class="p-3.5 text-center font-semibold text-gray-600">${item.count}x setor</td>
+                <td class="p-3.5 text-right font-extrabold text-blue-700">${formatRupiah(item.total)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openPdfModal() {
+        const now = new Date();
+        document.getElementById('pdfMonthInput').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        document.getElementById('pdfModal').classList.remove('hidden');
+    }
+    function closePdfModal() { document.getElementById('pdfModal').classList.add('hidden'); }
+    function togglePdfMonthInput() {
+        const type = document.getElementById('pdfPeriod').value;
+        document.getElementById('pdfMonthContainer').classList.toggle('hidden', type === 'all');
+    }
+
+    function generatePDF() {
+        const mode = document.getElementById('pdfPeriod').value;
+        const monthVal = document.getElementById('pdfMonthInput').value;
+        if(mode === 'monthly' && !monthVal) {
+            showCustomAlert('Silakan pilih bulan laporan', 'error'); return;
         }
-        function closePdfModal() { document.getElementById('pdfModal').classList.add('hidden'); }
-        function togglePdfMonthInput() {
-            const type = document.getElementById('pdfPeriod').value;
-            document.getElementById('pdfMonthContainer').classList.toggle('hidden', type === 'all');
+
+        closePdfModal();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        let filtered = [...transactions];
+        let reportTitle = "KESELURUHAN DATA";
+        
+        if (mode === 'monthly') {
+            filtered = filtered.filter(t => t.date.startsWith(monthVal));
+            const [y, m] = monthVal.split('-');
+            const mName = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][parseInt(m)-1];
+            reportTitle = `${mName.toUpperCase()} ${y}`;
         }
 
-        function generatePDF() {
-            const mode = document.getElementById('pdfPeriod').value;
-            const monthVal = document.getElementById('pdfMonthInput').value;
-            if(mode === 'monthly' && !monthVal) {
-                showCustomAlert('Silakan pilih bulan laporan', 'error'); return;
-            }
+        let totalIn = 0;
+        let totalOut = 0;
+        
+        filtered.forEach(t => {
+            if(t.type === 'in') totalIn += t.amount;
+            if(t.type === 'out') totalOut += t.amount;
+        });
 
-            closePdfModal();
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            let filtered = [...transactions];
-            let reportTitle = "KESELURUHAN DATA";
-            
-            if (mode === 'monthly') {
-                filtered = filtered.filter(t => t.date.startsWith(monthVal));
-                const [y, m] = monthVal.split('-');
-                const mName = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][parseInt(m)-1];
-                reportTitle = `${mName.toUpperCase()} ${y}`;
-            }
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(30, 58, 138);
+        doc.text("LAPORAN MUTASI KAS MASJID AL-BERR PUTRA", 14, 16);
+        doc.setFontSize(10);
+        doc.setTextColor(80, 80, 80);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Periode: ${reportTitle}`, 14, 23);
 
-            let localRolling = 0;
-            let totalIn = 0;
-            let totalOut = 0;
-            
-            filtered.forEach(t => {
-                if(t.type === 'in') totalIn += t.amount;
-                if(t.type === 'out') totalOut += t.amount;
-            });
+        const tableRows = filtered.map(t => [
+            formatDateIndo(t.date),
+            t.category,
+            t.contributor,
+            t.receiver,
+            t.type === 'in' ? formatRupiah(t.amount) : '-',
+            t.type === 'out' ? formatRupiah(t.amount) : '-',
+            formatRupiah(t.rollingBalance)
+        ]);
 
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            doc.setTextColor(30, 58, 138);
-            doc.text("LAPORAN MUTASI KAS MASJID AL-BERR PUTRA", 14, 16);
-            doc.setFontSize(10);
-            doc.setTextColor(80, 80, 80);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Periode: ${reportTitle}`, 14, 23);
+        doc.autoTable({
+            head: [["Tanggal", "Kategori", "Penyetor / Kamar", "Penerima", "Debit (Rp)", "Kredit (Rp)", "Saldo Akhir"]],
+            body: tableRows,
+            startY: 28,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 58, 138], halign: 'center' },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.row.index % 2 === 0) data.cell.styles.fillColor = [239, 246, 255];
+            },
+            styles: { fontSize: 8, textColor: [30, 30, 30] },
+            columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right', fontStyle: 'bold' } }
+        });
 
-            const tableRows = filtered.map(t => [
-                formatDateIndo(t.date),
-                t.category,
-                t.contributor,
-                t.receiver,
-                t.type === 'in' ? formatRupiah(t.amount) : '-',
-                t.type === 'out' ? formatRupiah(t.amount) : '-',
-                formatRupiah(t.rollingBalance)
+        const summaryY = doc.lastAutoTable.finalY + 8;
+        const finalBalanceStr = filtered.length > 0 ? formatRupiah(filtered[filtered.length-1].rollingBalance) : "Rp 0";
+
+        doc.autoTable({
+            startY: summaryY,
+            head: [[`RINGKASAN PERIODE ${reportTitle}`, "NOMINAL"]],
+            body: [
+                ["Total Pemasukan", formatRupiah(totalIn)],
+                ["Total Pengeluaran", formatRupiah(totalOut)],
+                ["Saldo Kas Di Akhir Periode", finalBalanceStr]
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: [51, 65, 85] },
+            styles: { fontSize: 8.5 },
+            columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'bold', halign: 'right', textColor: [37,99,235] } }
+        });
+
+        const sigY = (doc.lastAutoTable.finalY + 15 > 270) ? 200 : doc.lastAutoTable.finalY + 15; 
+        doc.text("Mengetahui,", 30, sigY);
+        doc.setFont("helvetica", "bold");
+        doc.text(document.getElementById('pdfSignRole1').value, 30, sigY + 5);
+        doc.setFont("helvetica", "normal");
+        doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
+
+        doc.text("Disetujui Oleh,", 140, sigY);
+        doc.setFont("helvetica", "bold");
+        doc.text(document.getElementById('pdfSignRole2').value, 140, sigY + 5);
+        doc.setFont("helvetica", "normal");
+        doc.text(`( ${document.getElementById('pdfSignName2').value} )`, 140, sigY + 25);
+
+        doc.save(`Laporan_Kas_${mode==='all' ? 'Semua' : monthVal}.pdf`);
+    }
+
+    function exportExcel() {
+        const ws_data = [
+            ["LAPORAN KAS MASJID AL-BERR PUTRA"],
+            ["Diekspor pada", new Date().toLocaleString('id-ID')],
+            [],
+            ["Tanggal", "Kategori", "Tipe", "Penyetor / Kamar", "Penerima", "Debit Masuk", "Kredit Keluar", "Saldo Akhir"]
+        ];
+        
+        transactions.forEach(t => {
+            ws_data.push([
+                t.date, t.category, t.type === 'in' ? 'Pemasukan' : 'Pengeluaran',
+                t.contributor, t.receiver,
+                t.type === 'in' ? t.amount : 0, t.type === 'out' ? t.amount : 0,
+                t.rollingBalance
             ]);
+        });
 
-            doc.autoTable({
-                head: [["Tanggal", "Kategori", "Penyetor / Kamar", "Penerima", "Debit (Rp)", "Kredit (Rp)", "Saldo Akhir"]],
-                body: tableRows,
-                startY: 28,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138], halign: 'center' },
-                didParseCell: function(data) {
-                    if (data.section === 'body' && data.row.index % 2 === 0) data.cell.styles.fillColor = [239, 246, 255];
-                },
-                styles: { fontSize: 8, textColor: [30, 30, 30] },
-                columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right', fontStyle: 'bold' } }
-            });
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws_data), "Mutasi Kas");
+        XLSX.writeFile(wb, `Laporan_Excel_${new Date().getTime()}.xlsx`);
+    }
 
-            const summaryY = doc.lastAutoTable.finalY + 8;
-            const finalBalanceStr = filtered.length > 0 ? formatRupiah(filtered[filtered.length-1].rollingBalance) : "Rp 0";
-
-            doc.autoTable({
-                startY: summaryY,
-                head: [[`RINGKASAN PERIODE ${reportTitle}`, "NOMINAL"]],
-                body: [
-                    ["Total Pemasukan", formatRupiah(totalIn)],
-                    ["Total Pengeluaran", formatRupiah(totalOut)],
-                    ["Saldo Kas Di Akhir Periode", finalBalanceStr]
-                ],
-                theme: 'grid',
-                headStyles: { fillColor: [51, 65, 85] },
-                styles: { fontSize: 8.5 },
-                columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'bold', halign: 'right', textColor: [37,99,235] } }
-            });
-
-            const sigY = (doc.lastAutoTable.finalY + 15 > 270) ? 200 : doc.lastAutoTable.finalY + 15; 
-            doc.text("Mengetahui,", 30, sigY);
-            doc.setFont("helvetica", "bold");
-            doc.text(document.getElementById('pdfSignRole1').value, 30, sigY + 5);
-            doc.setFont("helvetica", "normal");
-            doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
-
-            doc.text("Disetujui Oleh,", 140, sigY);
-            doc.setFont("helvetica", "bold");
-            doc.text(document.getElementById('pdfSignRole2').value, 140, sigY + 5);
-            doc.setFont("helvetica", "normal");
-            doc.text(`( ${document.getElementById('pdfSignName2').value} )`, 140, sigY + 25);
-
-            doc.save(`Laporan_Kas_${mode==='all' ? 'Semua' : monthVal}.pdf`);
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.nav-btn').forEach(el => {
+            el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
+            el.classList.add('text-blue-300');
+        });
+        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        const navBtn = document.getElementById(`nav-${tabId}`);
+        if(navBtn) {
+            navBtn.classList.remove('text-blue-300');
+            navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
         }
+    }
 
-        function exportExcel() {
-            const ws_data = [
-                ["LAPORAN KAS MASJID AL-BERR PUTRA"],
-                ["Diekspor pada", new Date().toLocaleString('id-ID')],
-                [],
-                ["Tanggal", "Kategori", "Tipe", "Penyetor / Kamar", "Penerima", "Debit Masuk", "Kredit Keluar", "Saldo Akhir"]
-            ];
-            
-            transactions.forEach(t => {
-                ws_data.push([
-                    t.date, t.category, t.type === 'in' ? 'Pemasukan' : 'Pengeluaran',
-                    t.contributor, t.receiver,
-                    t.type === 'in' ? t.amount : 0, t.type === 'out' ? t.amount : 0,
-                    t.rollingBalance
-                ]);
-            });
+    function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
+    function toggleCustomCategory(type) {
+        const isCustom = document.getElementById(`${type}_kategori`).value === 'Lainnya';
+        document.getElementById(`${type}_custom_category_wrapper`).classList.toggle('hidden', !isCustom);
+        document.getElementById(`${type}_custom_kategori`).required = isCustom;
+    }
 
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws_data), "Mutasi Kas");
-            XLSX.writeFile(wb, `Laporan_Excel_${new Date().getTime()}.xlsx`);
-        }
+    function formatRupiah(num) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    }
+    function formatDateIndo(dateStr) {
+        const d = new Date(dateStr);
+        return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    }
+    function setDefaultDates() {
+        const d = new Date().toISOString().substring(0, 10);
+        if(document.getElementById('in_tanggal')) document.getElementById('in_tanggal').value = d;
+        if(document.getElementById('out_tanggal')) document.getElementById('out_tanggal').value = d;
+    }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
-                el.classList.add('text-blue-300');
-            });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            const navBtn = document.getElementById(`nav-${tabId}`);
-            if(navBtn) {
-                navBtn.classList.remove('text-blue-300');
-                navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
-            }
+    let alertTimeout;
+    function showCustomAlert(message, type) {
+        const box = document.getElementById('alertBox');
+        const icon = document.getElementById('alertIcon');
+        
+        box.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 min-w-[300px] justify-center text-white font-bold text-sm scale-100 opacity-100';
+        
+        if (type === 'success') {
+            box.classList.add('bg-emerald-600');
+            icon.className = 'fas fa-check-circle text-lg';
+        } else {
+            box.classList.add('bg-red-600');
+            icon.className = 'fas fa-exclamation-triangle text-lg';
         }
-
-        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
-        function toggleCustomCategory(type) {
-            const isCustom = document.getElementById(`${type}_kategori`).value === 'Lainnya';
-            document.getElementById(`${type}_custom_category_wrapper`).classList.toggle('hidden', !isCustom);
-            document.getElementById(`${type}_custom_kategori`).required = isCustom;
-        }
-
-        function formatRupiah(num) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-        }
-        function formatDateIndo(dateStr) {
-            const d = new Date(dateStr);
-            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        }
-        function setDefaultDates() {
-            const d = new Date().toISOString().substring(0, 10);
-            if(document.getElementById('in_tanggal')) document.getElementById('in_tanggal').value = d;
-            if(document.getElementById('out_tanggal')) document.getElementById('out_tanggal').value = d;
-        }
-
-        let alertTimeout;
-        function showCustomAlert(message, type) {
-            const box = document.getElementById('alertBox');
-            const icon = document.getElementById('alertIcon');
-            
-            box.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 min-w-[300px] justify-center text-white font-bold text-sm scale-100 opacity-100';
-            
-            if (type === 'success') {
-                box.classList.add('bg-emerald-600');
-                icon.className = 'fas fa-check-circle text-lg';
-            } else {
-                box.classList.add('bg-red-600');
-                icon.className = 'fas fa-exclamation-triangle text-lg';
-            }
-            
-            document.getElementById('alertMessage').textContent = message;
-            
-            clearTimeout(alertTimeout);
-            alertTimeout = setTimeout(() => {
-                box.classList.replace('scale-100', 'scale-95');
-                box.classList.replace('opacity-100', 'opacity-0');
-                setTimeout(() => box.classList.add('hidden'), 300);
-            }, 3500);
-        }
-    </script>
-</body>
-</html>
+        
+        document.getElementById('alertMessage').textContent = message;
+        
+        clearTimeout(alertTimeout);
+        alertTimeout = setTimeout(() => {
+            box.classList.replace('scale-100', 'scale-95');
+            box.classList.replace('opacity-100', 'opacity-0');
+            setTimeout(() => box.classList.add('hidden'), 300);
+        }, 3500);
+    }
+</script>
