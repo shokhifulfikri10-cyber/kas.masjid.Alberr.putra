@@ -176,19 +176,32 @@
 
             <!-- TAB: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content fade-in space-y-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
                     <div>
                         <h1 class="text-2xl font-extrabold text-blue-950">Dashboard Keuangan Utama</h1>
                         <p class="text-gray-500 text-sm mt-0.5">Ringkasan saldo transparan dan arus kas Masjid Al-Berr Putra.</p>
                     </div>
-                    <span id="date-updated" class="text-xs bg-blue-100 text-blue-800 font-bold px-4 py-2 rounded-full border border-blue-200 shadow-xs">Diperbarui hari ini</span>
+                    
+                    <!-- KONTROL FILTER DASHBOAR (BULAN / MINGGU) -->
+                    <div class="flex flex-wrap items-center gap-2 bg-blue-50/80 p-2 rounded-2xl border border-blue-200">
+                        <select id="dashFilterType" onchange="toggleDashMode()" class="px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="month">Per Bulan</option>
+                            <option value="week">Per Minggu</option>
+                        </select>
+                        
+                        <!-- Input Pilihan Bulan -->
+                        <input type="month" id="dashMonthInput" onchange="updateDashboardView()" class="px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-600">
+                        
+                        <!-- Input Pilihan Minggu (Format YYYY-Www) -->
+                        <input type="week" id="dashWeekInput" onchange="updateDashboardView()" class="px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-600 hidden">
+                    </div>
                 </div>
                 
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
                         <div class="relative z-10">
-                            <span class="text-blue-200 text-xs font-bold tracking-wider uppercase">Total Saldo Akhir Berjalan</span>
+                            <span class="text-blue-200 text-xs font-bold tracking-wider uppercase" id="label-saldo-title">Total Saldo Akhir Berjalan</span>
                             <h2 class="text-3xl font-extrabold mt-1 tracking-tight" id="display-saldo">Rp 0</h2>
                         </div>
                         <div class="relative z-10 mt-6 flex items-center gap-2 text-xs font-medium text-blue-200">
@@ -200,7 +213,7 @@
                     <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pemasukan Bulan Ini</span>
+                                <span class="text-gray-400 text-xs font-bold tracking-wider uppercase" id="label-in-title">Pemasukan Periode Ini</span>
                                 <h3 class="text-2xl font-extrabold text-blue-900 mt-1" id="display-in-month">Rp 0</h3>
                             </div>
                             <div class="bg-blue-100 p-3 rounded-2xl text-blue-700"><i class="fas fa-arrow-down-long text-lg"></i></div>
@@ -210,7 +223,7 @@
                     <div class="bg-white/95 rounded-3xl p-6 border border-blue-200 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-gray-400 text-xs font-bold tracking-wider uppercase">Pengeluaran Bulan Ini</span>
+                                <span class="text-gray-400 text-xs font-bold tracking-wider uppercase" id="label-out-title">Pengeluaran Periode Ini</span>
                                 <h3 class="text-2xl font-extrabold text-indigo-900 mt-1" id="display-out-month">Rp 0</h3>
                             </div>
                             <div class="bg-indigo-100 p-3 rounded-2xl text-indigo-700"><i class="fas fa-arrow-up-long text-lg"></i></div>
@@ -221,7 +234,7 @@
                 <!-- Charts Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6">
-                        <h3 class="font-extrabold text-blue-950 mb-4"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas Bulanan</h3>
+                        <h3 class="font-extrabold text-blue-950 mb-4" id="chart-title-bar"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas Bulanan</h3>
                         <div class="h-64 flex items-center justify-center bg-blue-50/60 rounded-2xl p-2">
                             <canvas id="cashflowChart"></canvas>
                         </div>
@@ -229,7 +242,7 @@
                     
                     <div class="bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
                         <h3 class="font-extrabold text-blue-950 mb-1"><i class="fas fa-chart-pie text-indigo-600 mr-2"></i> Distribusi Pengeluaran</h3>
-                        <p class="text-xs text-gray-500 mb-3">Berdasarkan kategori pos biaya.</p>
+                        <p class="text-xs text-gray-500 mb-3" id="chart-subtitle-donut">Berdasarkan kategori pos biaya.</p>
                         <div class="h-56 flex-1 relative my-2 flex items-center justify-center">
                             <canvas id="expenseDonutChart"></canvas>
                         </div>
@@ -556,7 +569,28 @@
                 showCustomAlert("Modul Firebase tidak tersedia.", "error");
             }
             setDefaultDates();
+            initDashInputs();
         });
+
+        // Helper untuk inisialisasi tanggal default di dashboard filter
+        function initDashInputs() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            document.getElementById('dashMonthInput').value = `${y}-${m}`;
+
+            // Kalkulasi minggu ke- berapa di tahun ini untuk input type="week"
+            const onejan = new Date(now.getFullYear(), 0, 1);
+            const weekNum = Math.ceil((((now - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+            document.getElementById('dashWeekInput').value = `${y}-W${String(weekNum).padStart(2, '0')}`;
+        }
+
+        function toggleDashMode() {
+            const mode = document.getElementById('dashFilterType').value;
+            document.getElementById('dashMonthInput').classList.toggle('hidden', mode !== 'month');
+            document.getElementById('dashWeekInput').classList.toggle('hidden', mode !== 'week');
+            updateDashboardView();
+        }
 
        async function handleGoogleLogin() {
             const mod = window.firebaseAppModules;
@@ -761,10 +795,7 @@
                         let count = 0;
                         
                         for(const item of imported) {
-                            // Bersihkan ID lama Firebase jika ada agar Firebase membuat ID baru
                             const { firestoreId, rollingBalance, ...cleanData } = item;
-                            
-                            // Pastikan ada authorUid dan timestamp
                             if (!cleanData.timestamp && cleanData.date) cleanData.timestamp = new Date(cleanData.date).getTime();
                             if (currentUser) cleanData.authorUid = currentUser.uid;
 
@@ -776,12 +807,11 @@
                         showCustomAlert("File JSON rusak atau tidak valid.", "error");
                         console.error(err);
                     }
-                    event.target.value = ''; // reset input
+                    event.target.value = '';
                 };
                 reader.readAsText(file);
             } 
             else if (ext === 'xlsx' || ext === 'xls') {
-                // Membaca Backup dari Excel Aplikasi Lama
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
@@ -790,8 +820,7 @@
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
                         const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
                         
-                        // Cari baris data (mulai dari setelah Header 'Tanggal', 'Kategori')
-                        let startIdx = 4; // Default export Excel lama di baris ke-4
+                        let startIdx = 4;
                         for(let i=0; i<json.length; i++) {
                             if(json[i][0] === 'Tanggal' && json[i][1] === 'Kategori') {
                                 startIdx = i + 1;
@@ -808,18 +837,16 @@
                         
                         for(const row of rows) {
                             let dateVal = row[0];
-                            // Konversi jika tanggal Excel terbaca sebagai angka seri
                             if (typeof dateVal === 'number') {
                                 const d = new Date(Math.round((dateVal - 25569)*86400*1000));
                                 dateVal = d.toISOString().split('T')[0];
                             }
                             
-                            const typeLabel = row[2]; // Biasanya 'Pemasukan' atau 'Pengeluaran'
+                            const typeLabel = row[2];
                             const type = typeLabel === 'Pemasukan' ? 'in' : 'out';
                             const amount = type === 'in' ? parseInt(row[5]||0) : parseInt(row[6]||0);
                             const contributor = row[3] || '-';
                             
-                            // Ekstrak nama kamar dari dalam kurung "Nama (Kamar)"
                             let room = '-';
                             if (contributor.includes('(') && contributor.includes(')')) {
                                 room = contributor.substring(contributor.indexOf('(')+1, contributor.indexOf(')'));
@@ -843,10 +870,10 @@
                         }
                         showCustomAlert(`Selesai! ${count} data dari Excel masuk ke Database.`, "success");
                     } catch(err) {
-                        showCustomAlert("Gagal membaca file Excel. Pastikan menggunakan format Export dari aplikasi ini.", "error");
+                        showCustomAlert("Gagal membaca file Excel.", "error");
                         console.error(err);
                     }
-                    event.target.value = ''; // reset input
+                    event.target.value = '';
                 };
                 reader.readAsArrayBuffer(file);
             } else {
@@ -856,25 +883,71 @@
         }
 
         function updateUI() {
-            const currentMonthStr = new Date().toISOString().substring(0, 7);
-            let inMonth = 0;
-            let outMonth = 0;
-            
-            transactions.forEach(t => {
-                if(t.date.startsWith(currentMonthStr)) {
-                    if (t.type === 'in') inMonth += t.amount;
-                    if (t.type === 'out') outMonth += t.amount;
+            updateDashboardView();
+            renderTable();
+            renderRoomRankings();
+        }
+
+        // --- FUNGSI UTAMA PENGATUR DASHBOARD BERDASARKAN BULAN / MINGGU ---
+        function updateDashboardView() {
+            const mode = document.getElementById('dashFilterType').value;
+            let inPeriod = 0;
+            let outPeriod = 0;
+            let filteredTrans = [];
+
+            if (mode === 'month') {
+                const selectedMonth = document.getElementById('dashMonthInput').value; // format YYYY-MM
+                document.getElementById('label-saldo-title').textContent = "Total Saldo Akhir Berjalan";
+                document.getElementById('label-in-title').textContent = "Pemasukan Bulan Ini";
+                document.getElementById('label-out-title').textContent = "Pengeluaran Bulan Ini";
+                document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas Bulanan`;
+                document.getElementById('chart-subtitle-donut').textContent = "Berdasarkan kategori pos biaya bulan ini.";
+
+                if (selectedMonth) {
+                    filteredTrans = transactions.filter(t => t.date.startsWith(selectedMonth));
+                } else {
+                    filteredTrans = transactions;
                 }
+            } else {
+                // Mode Minggu (format input week: YYYY-Www)
+                const weekVal = document.getElementById('dashWeekInput').value;
+                document.getElementById('label-saldo-title').textContent = "Total Saldo Akhir Berjalan";
+                document.getElementById('label-in-title').textContent = "Pemasukan Minggu Ini";
+                document.getElementById('label-out-title').textContent = "Pengeluaran Minggu Ini";
+                document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Perbandingan Arus Kas Mingguan`;
+                document.getElementById('chart-subtitle-donut').textContent = "Berdasarkan kategori pos biaya minggu ini.";
+
+                if (weekVal) {
+                    filteredTrans = transactions.filter(t => getWeekString(new Date(t.date)) === weekVal);
+                } else {
+                    filteredTrans = transactions;
+                }
+            }
+
+            filteredTrans.forEach(t => {
+                if (t.type === 'in') inPeriod += t.amount;
+                if (t.type === 'out') outPeriod += t.amount;
             });
 
             document.getElementById('display-saldo').textContent = formatRupiah(currentBalance);
             document.getElementById('cek-saldo-out').textContent = formatRupiah(currentBalance);
-            document.getElementById('display-in-month').textContent = formatRupiah(inMonth);
-            document.getElementById('display-out-month').textContent = formatRupiah(outMonth);
+            document.getElementById('display-in-month').textContent = formatRupiah(inPeriod);
+            document.getElementById('display-out-month').textContent = formatRupiah(outPeriod);
 
-            renderTable();
-            renderCharts();
-            renderRoomRankings();
+            renderCharts(mode, filteredTrans);
+        }
+
+        // Helper untuk mendapatkan string kode minggu dari tanggal (YYYY-Www)
+        function getUserWeekString(d) {
+            return getWeekString(d);
+        }
+        function getWeekString(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
         }
 
         function populateMonthFilter() {
@@ -882,7 +955,7 @@
             const currentVal = select.value;
             select.innerHTML = '<option value="all">Semua Bulan</option>';
             
-            const months = new Set(transactions.map(t => t.date.substring(0, 7))); // YYYY-MM
+            const months = new Set(transactions.map(t => t.date.substring(0, 7)));
             const sortedMonths = Array.from(months).sort().reverse();
             
             sortedMonths.forEach(ym => {
@@ -939,27 +1012,52 @@
             });
         }
 
-        function renderCharts() {
+        function renderCharts(mode = 'month', filteredTrans = transactions) {
             const ctxBar = document.getElementById('cashflowChart');
             if(ctxBar) {
-                const monthlyData = {};
-                for(let i=5; i>=0; i--) {
-                    const d = new Date(); d.setMonth(d.getMonth() - i);
-                    const k = d.toISOString().substring(0, 7);
-                    const mName = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"][d.getMonth()];
-                    monthlyData[k] = { label: mName, in: 0, out: 0 };
-                }
-                transactions.forEach(t => {
-                    const k = t.date.substring(0, 7);
-                    if(monthlyData[k]) {
-                        if(t.type === 'in') monthlyData[k].in += t.amount;
-                        if(t.type === 'out') monthlyData[k].out += t.amount;
-                    }
-                });
+                let labels = [];
+                let inData = [];
+                let outData = [];
 
-                const labels = Object.values(monthlyData).map(m => m.label);
-                const inData = Object.values(monthlyData).map(m => m.in);
-                const outData = Object.values(monthlyData).map(m => m.out);
+                if (mode === 'month') {
+                    // Grafik 6 bulan terakhir
+                    const monthlyData = {};
+                    for(let i=5; i>=0; i--) {
+                        const d = new Date(); d.setMonth(d.getMonth() - i);
+                        const k = d.toISOString().substring(0, 7);
+                        const mName = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"][d.getMonth()];
+                        monthlyData[k] = { label: mName, in: 0, out: 0 };
+                    }
+                    transactions.forEach(t => {
+                        const k = t.date.substring(0, 7);
+                        if(monthlyData[k]) {
+                            if(t.type === 'in') monthlyData[k].in += t.amount;
+                            if(t.type === 'out') monthlyData[k].out += t.amount;
+                        }
+                    });
+                    labels = Object.values(monthlyData).map(m => m.label);
+                    inData = Object.values(monthlyData).map(m => m.in);
+                    outData = Object.values(monthlyData).map(m => m.out);
+                } else {
+                    // Grafik 4 minggu terakhir di sekitar minggu yang dipilih
+                    const weeklyData = {};
+                    for(let i=3; i>=0; i--) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - (i * 7));
+                        const wStr = getWeekString(d);
+                        weeklyData[wStr] = { label: `Minggu ${wStr.split('-W')[1]}`, in: 0, out: 0 };
+                    }
+                    transactions.forEach(t => {
+                        const wStr = getWeekString(new Date(t.date));
+                        if(weeklyData[wStr]) {
+                            if(t.type === 'in') weeklyData[wStr].in += t.amount;
+                            if(t.type === 'out') weeklyData[wStr].out += t.amount;
+                        }
+                    });
+                    labels = Object.values(weeklyData).map(m => m.label);
+                    inData = Object.values(weeklyData).map(m => m.in);
+                    outData = Object.values(weeklyData).map(m => m.out);
+                }
 
                 if(cashflowChartInstance) cashflowChartInstance.destroy();
                 cashflowChartInstance = new Chart(ctxBar, {
@@ -972,12 +1070,13 @@
                 });
             }
 
-            const drawDonut = (canvasId, dataFilter, labelMapFn, instanceRef, title) => {
+            // Donat pengeluaran dihitung berdasarkan data terfilter periode dashboard
+            const drawDonut = (canvasId, dataFilter, labelMapFn, instanceRef) => {
                 const ctx = document.getElementById(canvasId);
                 if(!ctx) return null;
                 
                 const map = {};
-                transactions.filter(dataFilter).forEach(t => {
+                filteredTrans.filter(dataFilter).forEach(t => {
                     const l = labelMapFn(t);
                     map[l] = (map[l] || 0) + t.amount;
                 });
@@ -997,8 +1096,8 @@
                 });
             };
 
-            expenseDonutInstance = drawDonut('expenseDonutChart', t => t.type === 'out', t => t.category, expenseDonutInstance, 'Pengeluaran');
-            roomDonutInstance = drawDonut('roomDonutChart', t => t.type === 'in' && t.room && t.room !== '-', t => t.room, roomDonutInstance, 'Kamar');
+            expenseDonutInstance = drawDonut('expenseDonutChart', t => t.type === 'out', t => t.category, expenseDonutInstance);
+            roomDonutInstance = drawDonut('roomDonutChart', t => t.type === 'in' && t.room && t.room !== '-', t => t.room, roomDonutInstance);
         }
 
         function renderRoomRankings() {
@@ -1065,7 +1164,6 @@
                 reportTitle = `${mName.toUpperCase()} ${y}`;
             }
 
-            let localRolling = 0;
             let totalIn = 0;
             let totalOut = 0;
             
