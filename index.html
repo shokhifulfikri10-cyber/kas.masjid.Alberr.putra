@@ -43,7 +43,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-800 h-[100dvh] w-full flex flex-col md:flex-row overflow-hidden bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950 relative">
+<body class="text-gray-800 h-[100dvh] w-full flex flex-col overflow-hidden bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950 relative">
 
     <!-- Alert Box -->
     <div id="alertBox" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] hidden px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl transition-all duration-300 min-w-[300px] justify-center">
@@ -79,47 +79,7 @@
         </div>
     </div>
 
-    <!-- DESKTOP SIDEBAR -->
-    <aside id="sidebar" class="w-64 bg-blue-950 text-white border-r border-blue-900/60 hidden md:flex flex-col h-full shadow-2xl shrink-0">
-        <div class="p-6 border-b border-blue-900/80 flex items-center gap-3 bg-gradient-to-r from-blue-900/50 to-indigo-950/50">
-            <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md"><i class="fas fa-mosque"></i></div>
-            <div>
-                <h2 class="font-bold text-white text-base leading-tight">Al-Berr Putra</h2>
-                <p class="text-[11px] text-blue-300">Sistem Keuangan Masjid</p>
-            </div>
-        </div>
-        
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-100 bg-blue-600 font-semibold transition-all shadow-sm">
-                <i class="fas fa-chart-pie w-5"></i> Dashboard Utama
-            </button>
-            <button onclick="switchTab('pemasukan')" id="nav-pemasukan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-hand-holding-dollar w-5"></i> Catat Pemasukan
-            </button>
-            <button onclick="switchTab('pengeluaran')" id="nav-pengeluaran" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-file-invoice-dollar w-5"></i> Catat Pengeluaran
-            </button>
-            <button onclick="switchTab('laporan')" id="nav-laporan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-file-alt w-5"></i> Buku Mutasi & Laporan
-            </button>
-            <button onclick="switchTab('kamar')" id="nav-kamar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
-                <i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar
-            </button>
-        </nav>
-
-        <div class="p-4 border-t border-blue-900/80 bg-blue-950/80">
-            <div class="flex items-center gap-3 mb-4">
-                <img id="userAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border-2 border-blue-400 shadow">
-                <div class="overflow-hidden">
-                    <p class="text-sm font-semibold text-white truncate" id="userNameDisplay">Loading...</p>
-                    <p class="text-[10px] text-blue-300 truncate" id="userEmailDisplay">Loading...</p>
-                </div>
-            </div>
-            <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-200 bg-red-950/60 hover:bg-red-900/80 rounded-xl transition-all border border-red-900/50">
-                <i class="fas fa-sign-out-alt"></i> Keluar Akun
-            </button>
-        </div>
-    </aside>
+   
 
     <!-- MOBILE BOTTOM NAVIGATION -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-blue-200 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.15)] z-40">
