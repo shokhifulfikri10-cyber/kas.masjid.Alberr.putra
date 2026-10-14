@@ -1208,17 +1208,39 @@
             XLSX.writeFile(wb, `Laporan_Excel_${new Date().getTime()}.xlsx`);
         }
 
-        function switchTab(tabId) {
+   function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Reset Sidebar Desktop
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
                 el.classList.add('text-blue-300');
             });
+            
+            // Reset Bottom Nav Mobile
+            document.querySelectorAll('.nav-btn-mobile').forEach(el => {
+                el.classList.remove('text-blue-600');
+                el.classList.add('text-gray-400');
+                el.querySelector('span').classList.remove('font-bold');
+                el.querySelector('span').classList.add('font-medium');
+            });
+
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            // Set Active Desktop
             const navBtn = document.getElementById(`nav-${tabId}`);
             if(navBtn) {
                 navBtn.classList.remove('text-blue-300');
                 navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
+            }
+            
+            // Set Active Mobile
+            const navBtnMobile = document.getElementById(`nav-mobile-${tabId}`);
+            if(navBtnMobile) {
+                navBtnMobile.classList.remove('text-gray-400');
+                navBtnMobile.classList.add('text-blue-600');
+                navBtnMobile.querySelector('span').classList.remove('font-medium');
+                navBtnMobile.querySelector('span').classList.add('font-bold');
             }
         }
 
