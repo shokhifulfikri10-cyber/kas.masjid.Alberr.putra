@@ -590,11 +590,13 @@
             document.getElementById('mainApp').classList.add('hidden');
         }
 
-        function handlePostLoginUI(user) {
+     function handlePostLoginUI(user) {
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('sidebar').classList.remove('hidden');
+            
+            // Memastikan sidebar tetap 'hidden' di HP, tapi tampil ('md:flex') di Desktop
+            document.getElementById('sidebar').className = "w-64 bg-blue-950 text-white border-r border-blue-900/60 hidden md:flex flex-col h-full shadow-2xl shrink-0";
+            
             document.getElementById('mainApp').classList.remove('hidden');
-
             const name = user.displayName || 'Bendahara Masjid';
             const email = user.email || '';
             const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff`;
