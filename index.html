@@ -31,10 +31,9 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Custom Zebra Striping for Tables */
-        .zebra-table tbody tr:nth-child(odd) { background-color: #eff6ff; /* blue-50 */ }
+        .zebra-table tbody tr:nth-child(odd) { background-color: #eff6ff; }
         .zebra-table tbody tr:nth-child(even) { background-color: #ffffff; }
-        .zebra-table tbody tr:hover { background-color: #dbeafe; /* blue-100 */ }
+        .zebra-table tbody tr:hover { background-color: #dbeafe; }
         .glass-modal {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -46,7 +45,7 @@
 </head>
 <body class="text-gray-800 h-[100dvh] w-full flex flex-col md:flex-row overflow-hidden bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950 relative">
 
-    <!-- Custom Alert Notification Box (Top Center) -->
+    <!-- Alert Box -->
     <div id="alertBox" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] hidden px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl transition-all duration-300 min-w-[300px] justify-center">
         <i id="alertIcon" class="fas text-xl"></i>
         <span id="alertMessage" class="font-semibold text-sm"></span>
@@ -122,7 +121,7 @@
         </div>
     </aside>
 
-<!-- MOBILE BOTTOM NAVIGATION -->
+    <!-- MOBILE BOTTOM NAVIGATION -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-blue-200 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.15)] z-40">
         <div class="flex justify-around items-center h-16">
             <button onclick="switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-blue-600 transition-all">
@@ -156,7 +155,7 @@
                 <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-mosque"></i></div>
                 <h2 class="font-bold text-sm">Masjid Al-Berr Putra</h2>
             </div>
-            <!-- Tombol Logout Langsung di Header HP -->
+            <!-- Tombol Logout Khusus HP -->
             <button onclick="handleLogout()" class="text-red-200 focus:outline-none p-2 rounded-lg bg-red-900/50 hover:bg-red-800 transition-all shadow-sm">
                 <i class="fas fa-sign-out-alt text-sm"></i>
             </button>
@@ -164,6 +163,7 @@
 
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8 w-full max-w-7xl mx-auto space-y-6">
+
             <!-- TAB: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content fade-in space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 bg-white/95 p-6 rounded-3xl border border-blue-200 shadow-sm backdrop-blur-md">
@@ -603,10 +603,6 @@
             document.getElementById('userEmailDisplay').textContent = email;
             document.getElementById('userAvatar').src = photo;
 
-            document.getElementById('mobileUserNameDisplay').textContent = name;
-            document.getElementById('mobileUserEmailDisplay').textContent = email;
-            document.getElementById('mobileUserAvatar').src = photo;
-
             switchTab('dashboard');
         }
 
@@ -757,10 +753,8 @@
                         let count = 0;
                         
                         for(const item of imported) {
-                            // Bersihkan ID lama Firebase jika ada agar Firebase membuat ID baru
                             const { firestoreId, rollingBalance, ...cleanData } = item;
                             
-                            // Pastikan ada authorUid dan timestamp
                             if (!cleanData.timestamp && cleanData.date) cleanData.timestamp = new Date(cleanData.date).getTime();
                             if (currentUser) cleanData.authorUid = currentUser.uid;
 
@@ -772,12 +766,11 @@
                         showCustomAlert("File JSON rusak atau tidak valid.", "error");
                         console.error(err);
                     }
-                    event.target.value = ''; // reset input
+                    event.target.value = ''; 
                 };
                 reader.readAsText(file);
             } 
             else if (ext === 'xlsx' || ext === 'xls') {
-                // Membaca Backup dari Excel Aplikasi Lama
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
@@ -786,8 +779,7 @@
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
                         const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
                         
-                        // Cari baris data (mulai dari setelah Header 'Tanggal', 'Kategori')
-                        let startIdx = 4; // Default export Excel lama di baris ke-4
+                        let startIdx = 4; 
                         for(let i=0; i<json.length; i++) {
                             if(json[i][0] === 'Tanggal' && json[i][1] === 'Kategori') {
                                 startIdx = i + 1;
@@ -804,18 +796,16 @@
                         
                         for(const row of rows) {
                             let dateVal = row[0];
-                            // Konversi jika tanggal Excel terbaca sebagai angka seri
                             if (typeof dateVal === 'number') {
                                 const d = new Date(Math.round((dateVal - 25569)*86400*1000));
                                 dateVal = d.toISOString().split('T')[0];
                             }
                             
-                            const typeLabel = row[2]; // Biasanya 'Pemasukan' atau 'Pengeluaran'
+                            const typeLabel = row[2]; 
                             const type = typeLabel === 'Pemasukan' ? 'in' : 'out';
                             const amount = type === 'in' ? parseInt(row[5]||0) : parseInt(row[6]||0);
                             const contributor = row[3] || '-';
                             
-                            // Ekstrak nama kamar dari dalam kurung "Nama (Kamar)"
                             let room = '-';
                             if (contributor.includes('(') && contributor.includes(')')) {
                                 room = contributor.substring(contributor.indexOf('(')+1, contributor.indexOf(')'));
@@ -842,7 +832,7 @@
                         showCustomAlert("Gagal membaca file Excel. Pastikan menggunakan format Export dari aplikasi ini.", "error");
                         console.error(err);
                     }
-                    event.target.value = ''; // reset input
+                    event.target.value = ''; 
                 };
                 reader.readAsArrayBuffer(file);
             } else {
@@ -935,7 +925,6 @@
             });
         }
 
-        // --- FUNGSI MENDAPATKAN KODE MINGGU (YEAR-WEEK) ---
         function getWeekString(date) {
             const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
             const dayNum = d.getUTCDay() || 7;
@@ -948,14 +937,12 @@
         function renderCharts() {
             const ctxBar = document.getElementById('cashflowChart');
             if(ctxBar) {
-                // Ambil mode dari dropdown (default: month)
                 const chartMode = document.getElementById('chartViewType') ? document.getElementById('chartViewType').value : 'month';
                 let labels = [];
                 let inData = [];
                 let outData = [];
 
                 if (chartMode === 'month') {
-                    // Update judul chart
                     if(document.getElementById('chart-title-bar')) document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Bulan Terakhir)`;
                     
                     const monthlyData = {};
@@ -977,16 +964,14 @@
                     inData = Object.values(monthlyData).map(m => m.in);
                     outData = Object.values(monthlyData).map(m => m.out);
                 } else {
-                    // MODE MINGGU
                   if(document.getElementById('chart-title-bar')) document.getElementById('chart-title-bar').innerHTML = `<i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Minggu Terakhir)`;
                     
                     const weeklyData = {};
                     for(let i=5; i>=0; i--) {
                         const d = new Date();
                         d.setDate(d.getDate() - (i * 7));
-                        const wStr = getWeekString(d); // Contoh: "2026-W42"
+                        const wStr = getWeekString(d); 
                         
-                        // Menentukan nama bulan singkat dan minggu ke-berapa dalam bulan tersebut
                         const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
                         const mName = monthNames[d.getMonth()];
                         const weekOfMonth = Math.ceil(d.getDate() / 7);
@@ -1058,7 +1043,6 @@
                 map[t.room].total += t.amount;
             });
 
-            // Mengurutkan berdasarkan frekuensi setor (count). Jika frekuensinya sama, baru diurutkan berdasarkan nominal (total)
             const sorted = Object.keys(map).map(k => ({ room: k, ...map[k] })).sort((a, b) => b.count - a.count || b.total - a.total);
             tbody.innerHTML = '';
             
@@ -1170,7 +1154,6 @@
                 columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'bold', halign: 'right', textColor: [37,99,235] } }
             });
 
-            // Mendapatkan tanggal otomatis sesuai hari cetak
             const today = new Date();
             const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const tglLaporan = `${today.getDate()} ${bulanIndo[today.getMonth()]} ${today.getFullYear()}`;
@@ -1183,7 +1166,6 @@
             doc.setFont("helvetica", "normal");
             doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
 
-            // Menampilkan Nama Kota dan Tanggal Cetak
             doc.text(`Pandaan, ${tglLaporan}`, 140, sigY - 6);
             doc.text("Disetujui Oleh,", 140, sigY);
             doc.setFont("helvetica", "bold");
@@ -1216,16 +1198,14 @@
             XLSX.writeFile(wb, `Laporan_Excel_${new Date().getTime()}.xlsx`);
         }
 
-   function switchTab(tabId) {
+        function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             
-            // Reset Sidebar Desktop
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
                 el.classList.add('text-blue-300');
             });
             
-            // Reset Bottom Nav Mobile
             document.querySelectorAll('.nav-btn-mobile').forEach(el => {
                 el.classList.remove('text-blue-600');
                 el.classList.add('text-gray-400');
@@ -1235,14 +1215,12 @@
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             
-            // Set Active Desktop
             const navBtn = document.getElementById(`nav-${tabId}`);
             if(navBtn) {
                 navBtn.classList.remove('text-blue-300');
                 navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
             }
             
-            // Set Active Mobile
             const navBtnMobile = document.getElementById(`nav-mobile-${tabId}`);
             if(navBtnMobile) {
                 navBtnMobile.classList.remove('text-gray-400');
@@ -1250,13 +1228,6 @@
                 navBtnMobile.querySelector('span').classList.remove('font-medium');
                 navBtnMobile.querySelector('span').classList.add('font-bold');
             }
-        }
-
-        function toggleMobileMenu() {      const menu = document.getElementById('mobileMenu');     menu.classList.toggle('hidden');      menu.classList.toggle('flex');  }
-        function toggleCustomCategory(type) {
-            const isCustom = document.getElementById(`${type}_kategori`).value === 'Lainnya';
-            document.getElementById(`${type}_custom_category_wrapper`).classList.toggle('hidden', !isCustom);
-            document.getElementById(`${type}_custom_kategori`).required = isCustom;
         }
 
         function formatRupiah(num) {
