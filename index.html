@@ -1170,13 +1170,21 @@
                 columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'bold', halign: 'right', textColor: [37,99,235] } }
             });
 
+            // Mendapatkan tanggal otomatis sesuai hari cetak
+            const today = new Date();
+            const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const tglLaporan = `${today.getDate()} ${bulanIndo[today.getMonth()]} ${today.getFullYear()}`;
+
             const sigY = (doc.lastAutoTable.finalY + 15 > 270) ? 200 : doc.lastAutoTable.finalY + 15; 
+            
             doc.text("Mengetahui,", 30, sigY);
             doc.setFont("helvetica", "bold");
             doc.text(document.getElementById('pdfSignRole1').value, 30, sigY + 5);
             doc.setFont("helvetica", "normal");
             doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
 
+            // Menampilkan Nama Kota dan Tanggal Cetak
+            doc.text(`Pandaan, ${tglLaporan}`, 140, sigY - 6);
             doc.text("Disetujui Oleh,", 140, sigY);
             doc.setFont("helvetica", "bold");
             doc.text(document.getElementById('pdfSignRole2').value, 140, sigY + 5);
