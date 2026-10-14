@@ -79,10 +79,8 @@
         </div>
     </div>
 
-   
-
-    <!-- MOBILE BOTTOM NAVIGATION -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-blue-200 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.15)] z-40">
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-blue-200 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.15)] z-40">
         <div class="flex justify-around items-center h-16">
             <button onclick="switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-blue-600 transition-all">
                 <i class="fas fa-chart-pie text-xl mb-1"></i>
@@ -108,21 +106,23 @@
     </nav>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col h-full hidden overflow-hidden relative bg-gradient-to-br from-blue-950 via-sky-900 to-indigo-950 backdrop-blur-sm md:rounded-l-3xl shadow-2xl" id="mainApp">
-        <!-- Mobile Header Bar -->
-        <header class="md:hidden bg-blue-950 text-white p-4 flex justify-between items-center z-10 shadow-md shrink-0">
+    <main class="flex-1 flex flex-col h-full hidden overflow-hidden relative bg-gradient-to-br from-blue-950 via-sky-900 to-indigo-950 backdrop-blur-sm shadow-2xl" id="mainApp">
+        <!-- Header Bar -->
+        <header class="bg-blue-950 text-white p-4 flex justify-between items-center z-10 shadow-md shrink-0">
             <div class="flex items-center gap-2">
                 <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-mosque"></i></div>
                 <h2 class="font-bold text-sm">Masjid Al-Berr Putra</h2>
             </div>
-            <!-- Tombol Logout Khusus HP -->
-            <button onclick="handleLogout()" class="text-red-200 focus:outline-none p-2 rounded-lg bg-red-900/50 hover:bg-red-800 transition-all shadow-sm">
-                <i class="fas fa-sign-out-alt text-sm"></i>
-            </button>
+            <div class="flex items-center gap-3">
+                <img id="userAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full border border-blue-400 hidden sm:block">
+                <button onclick="handleLogout()" class="text-red-200 focus:outline-none p-2 rounded-lg bg-red-900/50 hover:bg-red-800 transition-all shadow-sm flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt text-sm"></i> <span class="text-xs font-bold hidden sm:inline">Keluar</span>
+                </button>
+            </div>
         </header>
 
         <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8 w-full max-w-7xl mx-auto space-y-6">
+        <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-24 w-full max-w-7xl mx-auto space-y-6">
 
             <!-- TAB: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content fade-in space-y-6">
@@ -546,22 +546,19 @@
 
         function showLoginScreen() {
             document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('sidebar').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
         }
 
         function handlePostLoginUI(user) {
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('sidebar').classList.remove('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
 
             const name = user.displayName || 'Bendahara Masjid';
-            const email = user.email || '';
             const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff`;
 
-            document.getElementById('userNameDisplay').textContent = name;
-            document.getElementById('userEmailDisplay').textContent = email;
-            document.getElementById('userAvatar').src = photo;
+            // Update avatar at the top header
+            const avatarImg = document.getElementById('userAvatar');
+            if(avatarImg) avatarImg.src = photo;
 
             switchTab('dashboard');
         }
@@ -1161,11 +1158,6 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
-                el.classList.add('text-blue-300');
-            });
-            
             document.querySelectorAll('.nav-btn-mobile').forEach(el => {
                 el.classList.remove('text-blue-600');
                 el.classList.add('text-gray-400');
@@ -1174,12 +1166,6 @@
             });
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            const navBtn = document.getElementById(`nav-${tabId}`);
-            if(navBtn) {
-                navBtn.classList.remove('text-blue-300');
-                navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
-            }
             
             const navBtnMobile = document.getElementById(`nav-mobile-${tabId}`);
             if(navBtnMobile) {
