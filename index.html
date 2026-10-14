@@ -122,31 +122,41 @@
         </div>
     </aside>
 
-  <!-- MOBILE BOTTOM NAVIGATION -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-blue-200 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.15)] z-40">
-        <div class="flex justify-around items-center h-16">
-            <button onclick="switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-blue-600 transition-all">
-                <i class="fas fa-chart-pie text-xl mb-1"></i>
-                <span class="text-[10px] font-bold">Home</span>
-            </button>
-            <button onclick="switchTab('pemasukan')" id="nav-mobile-pemasukan" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-blue-500 transition-all">
-                <i class="fas fa-hand-holding-dollar text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Masuk</span>
-            </button>
-            <button onclick="switchTab('pengeluaran')" id="nav-mobile-pengeluaran" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-blue-500 transition-all">
-                <i class="fas fa-file-invoice-dollar text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Keluar</span>
-            </button>
-            <button onclick="switchTab('laporan')" id="nav-mobile-laporan" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-blue-500 transition-all">
-                <i class="fas fa-file-alt text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Mutasi</span>
-            </button>
-            <button onclick="switchTab('kamar')" id="nav-mobile-kamar" class="nav-btn-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-blue-500 transition-all">
-                <i class="fas fa-door-open text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Kamar</span>
-            </button>
+    <!-- MOBILE MENU DRAWER -->
+  <div id="mobileMenu" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden">
+        <div class="w-72 bg-blue-950 text-white h-full shadow-2xl p-4 flex flex-col justify-between transform transition-transform">
+            <div>
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-blue-900">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-mosque"></i></div>
+                        <span class="font-bold text-blue-100 text-sm">Al-Berr Putra</span>
+                    </div>
+                    <button onclick="toggleMobileMenu()" class="text-blue-300 hover:text-white p-2"><i class="fas fa-times text-lg"></i></button>
+                </div>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl bg-blue-600 text-white font-semibold text-sm"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
+                    <button onclick="switchTab('pemasukan'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-hand-holding-dollar w-5"></i> Pemasukan</button>
+                    <button onclick="switchTab('pengeluaran'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-file-invoice-dollar w-5"></i> Pengeluaran</button>
+                    <button onclick="switchTab('laporan'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-file-alt w-5"></i> Buku Mutasi</button>
+                    <button onclick="switchTab('kamar'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-200 hover:bg-blue-900 text-sm"><i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar</button>
+                </nav>
+            </div>
+            
+            <div class="pt-4 border-t border-blue-900">
+                <div class="flex items-center gap-3 mb-4">
+                    <img id="mobileUserAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full border border-blue-400">
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-white truncate" id="mobileUserNameDisplay">User</p>
+                        <p class="text-[10px] text-blue-300 truncate" id="mobileUserEmailDisplay">email@masjid</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full text-red-200 px-3 py-2 bg-red-950/60 rounded-xl border border-red-900 text-xs font-semibold flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </button>
+            </div>
         </div>
-    </nav>
+        <div class="flex-1" onclick="toggleMobileMenu()"></div>
+    </div>
 
     <!-- MAIN CONTENT AREA -->
     <main class="flex-1 flex flex-col h-full hidden overflow-hidden relative bg-gradient-to-br from-blue-950 via-sky-900 to-indigo-950 backdrop-blur-sm md:rounded-l-3xl shadow-2xl" id="mainApp">
@@ -156,13 +166,13 @@
                 <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-mosque"></i></div>
                 <h2 class="font-bold text-sm">Masjid Al-Berr Putra</h2>
             </div>
-            <!-- Tombol Logout Langsung di Header HP -->
-            <button onclick="handleLogout()" class="text-red-200 focus:outline-none p-2 rounded-lg bg-red-900/50 hover:bg-red-800 transition-all shadow-sm">
-                <i class="fas fa-sign-out-alt text-sm"></i>
+            <button onclick="toggleMobileMenu()" class="text-white focus:outline-none p-2 rounded-lg bg-blue-900/80">
+                <i class="fas fa-bars text-lg"></i>
             </button>
         </header>
+
         <!-- Scrollable Content -->
-     <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8 w-full max-w-7xl mx-auto space-y-6">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto space-y-6">
 
             <!-- TAB: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content fade-in space-y-6">
@@ -1170,21 +1180,13 @@
                 columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'bold', halign: 'right', textColor: [37,99,235] } }
             });
 
-// Mendapatkan tanggal otomatis (contoh: 14 Oktober 2026)
-            const today = new Date();
-            const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            const tglLaporan = `${today.getDate()} ${bulanIndo[today.getMonth()]} ${today.getFullYear()}`;
-
             const sigY = (doc.lastAutoTable.finalY + 15 > 270) ? 200 : doc.lastAutoTable.finalY + 15; 
-            
             doc.text("Mengetahui,", 30, sigY);
             doc.setFont("helvetica", "bold");
             doc.text(document.getElementById('pdfSignRole1').value, 30, sigY + 5);
             doc.setFont("helvetica", "normal");
             doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
 
-            // Menampilkan Nama Kota dan Tanggal Cetak
-            doc.text(`Pandaan, ${tglLaporan}`, 140, sigY - 6);
             doc.text("Disetujui Oleh,", 140, sigY);
             doc.setFont("helvetica", "bold");
             doc.text(document.getElementById('pdfSignRole2').value, 140, sigY + 5);
@@ -1192,6 +1194,7 @@
             doc.text(`( ${document.getElementById('pdfSignName2').value} )`, 140, sigY + 25);
 
             doc.save(`Laporan_Kas_${mode==='all' ? 'Semua' : monthVal}.pdf`);
+        }
 
         function exportExcel() {
             const ws_data = [
@@ -1215,39 +1218,17 @@
             XLSX.writeFile(wb, `Laporan_Excel_${new Date().getTime()}.xlsx`);
         }
 
-    function switchTab(tabId) {
+        function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            
-            // Reset Sidebar Desktop
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
                 el.classList.add('text-blue-300');
             });
-            
-            // Reset Bottom Nav Mobile
-            document.querySelectorAll('.nav-btn-mobile').forEach(el => {
-                el.classList.remove('text-blue-600');
-                el.classList.add('text-gray-400');
-                el.querySelector('span').classList.remove('font-bold');
-                el.querySelector('span').classList.add('font-medium');
-            });
-
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            // Set Active Desktop
             const navBtn = document.getElementById(`nav-${tabId}`);
             if(navBtn) {
                 navBtn.classList.remove('text-blue-300');
                 navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
-            }
-            
-            // Set Active Mobile
-            const navBtnMobile = document.getElementById(`nav-mobile-${tabId}`);
-            if(navBtnMobile) {
-                navBtnMobile.classList.remove('text-gray-400');
-                navBtnMobile.classList.add('text-blue-600');
-                navBtnMobile.querySelector('span').classList.remove('font-medium');
-                navBtnMobile.querySelector('span').classList.add('font-bold');
             }
         }
 
