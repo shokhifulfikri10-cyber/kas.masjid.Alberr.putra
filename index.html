@@ -1161,7 +1161,8 @@
             const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const tglLaporan = `${today.getDate()} ${bulanIndo[today.getMonth()]} ${today.getFullYear()}`;
 
-            const sigY = (doc.lastAutoTable.finalY + 15 > 270) ? 200 : doc.lastAutoTable.finalY + 15; 
+          // Jarak awal dari tabel diturunkan (dari +15 menjadi +25)
+            const sigY = (doc.lastAutoTable.finalY + 25 > 270) ? 200 : doc.lastAutoTable.finalY + 25; 
             
             doc.text("Mengetahui,", 30, sigY);
             doc.setFont("helvetica", "bold");
@@ -1169,7 +1170,8 @@
             doc.setFont("helvetica", "normal");
             doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
 
-            doc.text(`Pandaan, ${tglLaporan}`, 140, sigY - 6);
+            // Jarak antara teks tanggal dan "Disetujui Oleh" dilebarkan (dari -6 menjadi -12)
+            doc.text(`Pandaan, ${tglLaporan}`, 140, sigY - 12);
             doc.text("Disetujui Oleh,", 140, sigY);
             doc.setFont("helvetica", "bold");
             doc.text(document.getElementById('pdfSignRole2').value, 140, sigY + 5);
