@@ -254,9 +254,9 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pemasukan</label>
                                 <select id="in_kategori" required onchange="toggleCustomCategory('in')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-                                    <option value="Sumbangan Santri" selected>Sumbangan Santri / Warga</option>
-                                    <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
-                                </select>
+    <option value="Sumbangan Santri" selected>Sumbangan Santri / Warga</option>
+    <option value="Lainnya">Lainnya</option>
+</select>
                             </div>
                         </div>
 
@@ -324,13 +324,13 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pengeluaran</label>
-                                <select id="out_kategori" required onchange="toggleCustomCategory('out')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-                                    <option value="Operasional Rutin">Operasional (Listrik, Air)</option>
-                                    <option value="Honorarium">Honorarium (Imam, Khatib)</option>
-                                    <option value="Pemeliharaan">Pemeliharaan & Perbaikan</option>
-                                    <option value="Konsumsi Kajian">Konsumsi Kajian / Kegiatan</option>
-                                    <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
-                                </select>
+                               <select id="out_kategori" required onchange="toggleCustomCategory('out')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
+    <option value="Operasional Rutin">Operasional (Listrik, Air)</option>
+    <option value="Honorarium">Honorarium (Imam, Khatib)</option>
+    <option value="Pemeliharaan">Pemeliharaan & Perbaikan</option>
+    <option value="Konsumsi Kajian">Konsumsi Kajian / Kegiatan</option>
+    <option value="Lainnya">Lainnya</option>
+</select>
                             </div>
                         </div>
 
@@ -1240,11 +1240,28 @@
             const d = new Date(dateStr);
             return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
         }
-        function setDefaultDates() {
+    function setDefaultDates() {
             const d = new Date().toISOString().substring(0, 10);
             if(document.getElementById('in_tanggal')) document.getElementById('in_tanggal').value = d;
             if(document.getElementById('out_tanggal')) document.getElementById('out_tanggal').value = d;
         }
+
+        // --- TAMBAH FUNGSI INI ---
+        function toggleCustomCategory(type) {
+            const selectEl = document.getElementById(type + '_kategori');
+            const customWrapper = document.getElementById(type + '_custom_category_wrapper');
+            const customInput = document.getElementById(type + '_custom_kategori');
+            
+            if (selectEl.value === 'Lainnya') {
+                customWrapper.classList.remove('hidden');
+                customInput.setAttribute('required', 'true');
+            } else {
+                customWrapper.classList.add('hidden');
+                customInput.removeAttribute('required');
+                customInput.value = ''; 
+            }
+        }
+        // -------------------------
 
         let alertTimeout;
         function showCustomAlert(message, type) {
