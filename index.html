@@ -30,7 +30,7 @@
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; transition: background 0.5s ease; }
+        body { font-family: 'Inter', sans-serif; }
         .zebra-table tbody tr:nth-child(odd) { background-color: #eff6ff; }
         .zebra-table tbody tr:nth-child(even) { background-color: #ffffff; }
         .zebra-table tbody tr:hover { background-color: #dbeafe; }
@@ -43,7 +43,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Tambahan transisi mulus untuk perubahan tema */
-        #loginScreen, #mainApp { transition: background 0.5s ease; }
+        #loginScreen, #mainApp, #sidebar, #mobileHeader, body { transition: background-color 0.5s ease, background-image 0.5s ease; }
     </style>
 </head>
 <body class="text-gray-800 h-[100dvh] w-full flex flex-col md:flex-row overflow-hidden bg-gradient-to-tr from-sky-950 via-blue-900 to-indigo-950 relative">
@@ -83,12 +83,12 @@
     </div>
 
     <!-- DESKTOP SIDEBAR -->
-    <aside id="sidebar" class="w-64 bg-blue-950 text-white border-r border-blue-900/60 hidden md:flex flex-col h-full shadow-2xl shrink-0">
-        <div class="p-6 border-b border-blue-900/80 flex items-center gap-3 bg-gradient-to-r from-blue-900/50 to-indigo-950/50">
+    <aside id="sidebar" class="w-64 bg-blue-950 text-white border-r border-white/10 hidden md:flex flex-col h-full shadow-2xl shrink-0">
+        <div class="p-6 border-b border-white/10 flex items-center gap-3 bg-black/10">
             <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md"><i class="fas fa-mosque"></i></div>
             <div>
                 <h2 class="font-bold text-white text-base leading-tight">Al-Berr Putra</h2>
-                <p class="text-[11px] text-blue-300">Sistem Keuangan Masjid</p>
+                <p class="text-[11px] text-gray-300">Sistem Keuangan Masjid</p>
             </div>
         </div>
         
@@ -96,29 +96,29 @@
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-100 bg-blue-600 font-semibold transition-all shadow-sm">
                 <i class="fas fa-chart-pie w-5"></i> Dashboard Utama
             </button>
-            <button onclick="switchTab('pemasukan')" id="nav-pemasukan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <button onclick="switchTab('pemasukan')" id="nav-pemasukan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all">
                 <i class="fas fa-hand-holding-dollar w-5"></i> Catat Pemasukan
             </button>
-            <button onclick="switchTab('pengeluaran')" id="nav-pengeluaran" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <button onclick="switchTab('pengeluaran')" id="nav-pengeluaran" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all">
                 <i class="fas fa-file-invoice-dollar w-5"></i> Catat Pengeluaran
             </button>
-            <button onclick="switchTab('laporan')" id="nav-laporan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <button onclick="switchTab('laporan')" id="nav-laporan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all">
                 <i class="fas fa-file-alt w-5"></i> Buku Mutasi & Laporan
             </button>
-            <button onclick="switchTab('kamar')" id="nav-kamar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-blue-300 hover:bg-blue-900/80 hover:text-white transition-all">
+            <button onclick="switchTab('kamar')" id="nav-kamar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all">
                 <i class="fas fa-door-open w-5 text-blue-400"></i> Statistik Kamar
             </button>
         </nav>
 
-        <div class="p-4 border-t border-blue-900/80 bg-blue-950/80">
+        <div class="p-4 border-t border-white/10 bg-black/20">
             <div class="flex items-center gap-3 mb-4">
                 <img id="userAvatar" src="" alt="User" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border-2 border-blue-400 shadow">
                 <div class="overflow-hidden">
                     <p class="text-sm font-semibold text-white truncate" id="userNameDisplay">Loading...</p>
-                    <p class="text-[10px] text-blue-300 truncate" id="userEmailDisplay">Loading...</p>
+                    <p class="text-[10px] text-gray-300 truncate" id="userEmailDisplay">Loading...</p>
                 </div>
             </div>
-            <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-200 bg-red-950/60 hover:bg-red-900/80 rounded-xl transition-all border border-red-900/50">
+            <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-200 bg-red-900/60 hover:bg-red-800 rounded-xl transition-all border border-red-900/50">
                 <i class="fas fa-sign-out-alt"></i> Keluar Akun
             </button>
         </div>
@@ -153,7 +153,7 @@
     <!-- MAIN CONTENT AREA -->
     <main class="flex-1 flex flex-col h-full hidden overflow-hidden relative bg-gradient-to-br from-blue-950 via-sky-900 to-indigo-950 backdrop-blur-sm md:rounded-l-3xl shadow-2xl" id="mainApp">
         <!-- Mobile Header Bar -->
-        <header class="md:hidden bg-blue-950 text-white p-4 flex justify-between items-center z-10 shadow-md shrink-0">
+        <header id="mobileHeader" class="md:hidden bg-blue-950 text-white p-4 flex justify-between items-center z-10 shadow-md shrink-0 border-b border-white/10">
             <div class="flex items-center gap-2">
                 <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-mosque"></i></div>
                 <h2 class="font-bold text-sm">Masjid Al-Berr Putra</h2>
@@ -180,14 +180,24 @@
                     <div class="flex items-center gap-3 w-full md:w-auto">
                         <!-- DROPDOWN TEMA -->
                         <select id="themeSelector" onchange="applyTheme(this.value)" class="flex-1 md:flex-none bg-blue-50 border border-blue-200 text-blue-800 font-bold text-xs rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer">
-                            <option value="default">🎨 Tema: Biru Klasik</option>
-                            <option value="emerald">🎨 Tema: Hijau Zamrud</option>
-                            <option value="sunset">🎨 Tema: Jingga Senja</option>
-                            <option value="midnight">🎨 Tema: Malam Gelap</option>
-                            <option value="ocean">🎨 Tema: Biru Samudra</option>
-                            <option value="royal">🎨 Tema: Ungu Eksklusif</option>
-                            <option value="slate">🎨 Tema: Hitam Elegan</option>
-                            <option value="solidGreen">🎨 Tema: Hijau Solid</option>
+                            <optgroup label="Tema Gradasi (Gradient)">
+                                <option value="default">🎨 Biru Klasik</option>
+                                <option value="emerald">🎨 Hijau Zamrud</option>
+                                <option value="ocean">🎨 Biru Samudra</option>
+                                <option value="indigo">🎨 Ungu Indigo</option>
+                                <option value="royal">🎨 Ungu Eksklusif</option>
+                                <option value="crimson">🎨 Merah Crimson</option>
+                                <option value="sunset">🎨 Jingga Senja</option>
+                                <option value="mocha">🎨 Cokelat Mocha</option>
+                                <option value="midnight">🎨 Malam Gelap</option>
+                            </optgroup>
+                            <optgroup label="Tema Polos (Solid)">
+                                <option value="solidGreen">🎨 Hijau Solid</option>
+                                <option value="solidBlue">🎨 Biru Solid</option>
+                                <option value="solidPurple">🎨 Ungu Solid</option>
+                                <option value="solidTeal">🎨 Tosca Solid</option>
+                                <option value="slate">🎨 Hitam Elegan</option>
+                            </optgroup>
                         </select>
                         <span id="date-updated" class="hidden md:inline-block text-xs bg-blue-100 text-blue-800 font-bold px-4 py-2 rounded-full border border-blue-200 shadow-xs">Diperbarui hari ini</span>
                     </div>
@@ -230,7 +240,6 @@
                 <!-- Charts Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white/95 rounded-3xl border border-blue-200 shadow-sm p-6 flex flex-col">
-                        
                         <!-- FILTER KHUSUS CHART BALOK -->
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-extrabold text-blue-950" id="chart-title-bar"><i class="fas fa-chart-column text-blue-600 mr-2"></i> Arus Kas (6 Bulan Terakhir)</h3>
@@ -272,9 +281,9 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pemasukan</label>
                                 <select id="in_kategori" required onchange="toggleCustomCategory('in')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-    <option value="Sumbangan Santri" selected>Sumbangan Santri / Warga</option>
-    <option value="Lainnya">Lainnya</option>
-</select>
+                                    <option value="Sumbangan Santri" selected>Sumbangan Santri / Warga</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
                             </div>
                         </div>
 
@@ -342,13 +351,13 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase text-blue-900 mb-2">Kategori Pengeluaran</label>
-                               <select id="out_kategori" required onchange="toggleCustomCategory('out')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
-    <option value="Operasional Rutin">Operasional (Listrik, Air)</option>
-    <option value="Honorarium">Honorarium (Imam, Khatib)</option>
-    <option value="Pemeliharaan">Pemeliharaan & Perbaikan</option>
-    <option value="Konsumsi Kajian">Konsumsi Kajian / Kegiatan</option>
-    <option value="Lainnya">Lainnya</option>
-</select>
+                                <select id="out_kategori" required onchange="toggleCustomCategory('out')" class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-semibold">
+                                    <option value="Operasional Rutin">Operasional (Listrik, Air)</option>
+                                    <option value="Honorarium">Honorarium (Imam, Khatib)</option>
+                                    <option value="Pemeliharaan">Pemeliharaan & Perbaikan</option>
+                                    <option value="Konsumsi Kajian">Konsumsi Kajian / Kegiatan</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
                             </div>
                         </div>
 
@@ -524,6 +533,61 @@
     </div>
 
     <script>
+        // --- SISTEM TEMA WARNA MULAI ---
+        const themeClasses = {
+            default: ['bg-gradient-to-tr', 'from-sky-950', 'via-blue-900', 'to-indigo-950'],
+            emerald: ['bg-gradient-to-br', 'from-teal-900', 'via-emerald-900', 'to-green-950'],
+            ocean: ['bg-gradient-to-tr', 'from-cyan-900', 'to-blue-950'],
+            indigo: ['bg-gradient-to-br', 'from-indigo-900', 'via-purple-900', 'to-indigo-950'],
+            royal: ['bg-gradient-to-r', 'from-violet-900', 'to-fuchsia-950'],
+            crimson: ['bg-gradient-to-br', 'from-red-900', 'via-rose-900', 'to-red-950'],
+            sunset: ['bg-gradient-to-br', 'from-orange-900', 'via-amber-800', 'to-red-950'],
+            mocha: ['bg-gradient-to-br', 'from-amber-900', 'via-orange-900', 'to-stone-900'],
+            midnight: ['bg-gradient-to-b', 'from-gray-900', 'via-slate-900', 'to-black'],
+            solidGreen: ['bg-emerald-900'],
+            solidBlue: ['bg-blue-900'],
+            solidPurple: ['bg-purple-950'],
+            solidTeal: ['bg-teal-900'],
+            slate: ['bg-slate-900']
+        };
+
+        const allBgClasses = [
+            'bg-gradient-to-tr', 'bg-gradient-to-br', 'bg-gradient-to-b', 'bg-gradient-to-r',
+            'from-sky-950', 'via-blue-900', 'to-indigo-950',
+            'from-blue-950', 'via-sky-900', 
+            'from-teal-900', 'via-emerald-900', 'to-green-950',
+            'from-orange-900', 'via-amber-800', 'to-red-950',
+            'from-gray-900', 'via-slate-900', 'to-black',
+            'from-cyan-900', 'to-blue-950',
+            'from-violet-900', 'to-fuchsia-950',
+            'from-indigo-900', 'via-purple-900',
+            'from-red-900', 'via-rose-900',
+            'from-amber-900', 'via-orange-900', 'to-stone-900',
+            'bg-slate-900', 'bg-emerald-900', 'bg-purple-950', 'bg-blue-900', 'bg-teal-900', 'bg-blue-950'
+        ];
+
+        function applyTheme(themeName) {
+            const elements = [
+                document.body,
+                document.getElementById('loginScreen'),
+                document.getElementById('mainApp'),
+                document.getElementById('sidebar'),
+                document.getElementById('mobileHeader')
+            ];
+            
+            elements.forEach(el => {
+                if(el) {
+                    el.classList.remove(...allBgClasses);
+                    el.classList.add(...themeClasses[themeName]);
+                }
+            });
+
+            localStorage.setItem('alberrTheme', themeName);
+            const selector = document.getElementById('themeSelector');
+            if(selector) selector.value = themeName;
+        }
+        // --- SISTEM TEMA WARNA SELESAI ---
+
         // --- DATA & STATE ---
         let transactions = [];
         let currentBalance = 0;
@@ -571,55 +635,11 @@
                 showCustomAlert("Modul Firebase tidak tersedia.", "error");
             }
             setDefaultDates();
-            
-            // Terapkan Tema yang tersimpan saat pertama kali dibuka
+
+            // Memuat Tema dari LocalStorage
             const savedTheme = localStorage.getItem('alberrTheme') || 'default';
             applyTheme(savedTheme);
         });
-
-        // --- SISTEM TEMA WARNA ---
-        const themeClasses = {
-            default: ['bg-gradient-to-tr', 'from-sky-950', 'via-blue-900', 'to-indigo-950'],
-            emerald: ['bg-gradient-to-br', 'from-teal-900', 'via-emerald-900', 'to-green-950'],
-            sunset: ['bg-gradient-to-br', 'from-orange-900', 'via-amber-800', 'to-red-950'],
-            midnight: ['bg-gradient-to-b', 'from-gray-900', 'via-slate-900', 'to-black'],
-            ocean: ['bg-gradient-to-tr', 'from-cyan-900', 'to-blue-950'],
-            royal: ['bg-gradient-to-r', 'from-violet-900', 'to-fuchsia-950'],
-            slate: ['bg-slate-900'],
-            solidGreen: ['bg-emerald-900']
-        };
-
-        const allBgClasses = [
-            'bg-gradient-to-tr', 'bg-gradient-to-br', 'bg-gradient-to-b', 'bg-gradient-to-r',
-            'from-sky-950', 'via-blue-900', 'to-indigo-950',
-            'from-blue-950', 'via-sky-900', // existing mainApp classes
-            'from-teal-900', 'via-emerald-900', 'to-green-950',
-            'from-orange-900', 'via-amber-800', 'to-red-950',
-            'from-gray-900', 'via-slate-900', 'to-black',
-            'from-cyan-900', 'to-blue-950',
-            'from-violet-900', 'to-fuchsia-950',
-            'bg-slate-900', 'bg-emerald-900'
-        ];
-
-        function applyTheme(themeName) {
-            const elements = [
-                document.body,
-                document.getElementById('loginScreen'),
-                document.getElementById('mainApp')
-            ];
-            
-            elements.forEach(el => {
-                if(el) {
-                    el.classList.remove(...allBgClasses);
-                    el.classList.add(...themeClasses[themeName]);
-                }
-            });
-
-            localStorage.setItem('alberrTheme', themeName);
-            const selector = document.getElementById('themeSelector');
-            if(selector) selector.value = themeName;
-        }
-        // -------------------------
 
        async function handleGoogleLogin() {
             const mod = window.firebaseAppModules;
@@ -653,15 +673,16 @@
 
         function showLoginScreen() {
             document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('sidebar').classList.add('hidden');
+            // Gunakan style display agar tidak menimpa class Tailwind dari sidebar
+            document.getElementById('sidebar').style.display = 'none';
             document.getElementById('mainApp').classList.add('hidden');
         }
 
-     function handlePostLoginUI(user) {
+        function handlePostLoginUI(user) {
             document.getElementById('loginScreen').classList.add('hidden');
             
-            // Memastikan sidebar tetap 'hidden' di HP, tapi tampil ('md:flex') di Desktop
-            document.getElementById('sidebar').className = "w-64 bg-blue-950 text-white border-r border-blue-900/60 hidden md:flex flex-col h-full shadow-2xl shrink-0";
+            // Kembalikan display kosong agar class md:flex jalan di desktop
+            document.getElementById('sidebar').style.display = '';
             
             document.getElementById('mainApp').classList.remove('hidden');
             const name = user.displayName || 'Bendahara Masjid';
@@ -671,6 +692,10 @@
             document.getElementById('userNameDisplay').textContent = name;
             document.getElementById('userEmailDisplay').textContent = email;
             document.getElementById('userAvatar').src = photo;
+
+            // Pastikan tema di-apply ulang karena sidebar baru saja muncul
+            const savedTheme = localStorage.getItem('alberrTheme') || 'default';
+            applyTheme(savedTheme);
 
             switchTab('dashboard');
         }
@@ -1227,12 +1252,10 @@
             const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const tglLaporan = `${today.getDate()} ${bulanIndo[today.getMonth()]} ${today.getFullYear()}`;
 
-          // Jarak awal dari tabel diturunkan (dari +15 menjadi +25)
-          // PERBAIKAN: Validasi posisi tanda tangan agar otomatis membuat halaman baru (addPage) jika melebihi batas bawah kertas
             let sigY = doc.lastAutoTable.finalY + 20;
             if (sigY > 250) {
                 doc.addPage();
-                sigY = 30; // Posisi aman di halaman baru
+                sigY = 30;
             }
             
             doc.setFont("helvetica", "normal");
@@ -1242,7 +1265,6 @@
             doc.setFont("helvetica", "normal");
             doc.text(`( ${document.getElementById('pdfSignName1').value} )`, 30, sigY + 25);
 
-            // Jarak antara teks tanggal dan "Disetujui Oleh" dilebarkan (dari -6 menjadi -12)
             doc.text(`Pandaan, ${tglLaporan}`, 140, sigY - 12);
             doc.text("Disetujui Oleh,", 140, sigY);
             doc.setFont("helvetica", "bold");
@@ -1280,7 +1302,7 @@
             
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
-                el.classList.add('text-blue-300');
+                el.classList.add('text-gray-300');
             });
             
             document.querySelectorAll('.nav-btn-mobile').forEach(el => {
@@ -1294,7 +1316,7 @@
             
             const navBtn = document.getElementById(`nav-${tabId}`);
             if(navBtn) {
-                navBtn.classList.remove('text-blue-300');
+                navBtn.classList.remove('text-gray-300');
                 navBtn.classList.add('bg-blue-600', 'text-white', 'font-semibold');
             }
             
@@ -1314,13 +1336,12 @@
             const d = new Date(dateStr);
             return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
         }
-    function setDefaultDates() {
+        function setDefaultDates() {
             const d = new Date().toISOString().substring(0, 10);
             if(document.getElementById('in_tanggal')) document.getElementById('in_tanggal').value = d;
             if(document.getElementById('out_tanggal')) document.getElementById('out_tanggal').value = d;
         }
 
-        // --- TAMBAH FUNGSI INI ---
         function toggleCustomCategory(type) {
             const selectEl = document.getElementById(type + '_kategori');
             const customWrapper = document.getElementById(type + '_custom_category_wrapper');
@@ -1335,7 +1356,6 @@
                 customInput.value = ''; 
             }
         }
-        // -------------------------
 
         let alertTimeout;
         function showCustomAlert(message, type) {
