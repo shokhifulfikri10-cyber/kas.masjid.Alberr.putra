@@ -1162,8 +1162,14 @@
             const tglLaporan = `${today.getDate()} ${bulanIndo[today.getMonth()]} ${today.getFullYear()}`;
 
           // Jarak awal dari tabel diturunkan (dari +15 menjadi +25)
-            const sigY = (doc.lastAutoTable.finalY + 25 > 270) ? 200 : doc.lastAutoTable.finalY + 25; 
+          // PERBAIKAN: Validasi posisi tanda tangan agar otomatis membuat halaman baru (addPage) jika melebihi batas bawah kertas
+            let sigY = doc.lastAutoTable.finalY + 20;
+            if (sigY > 250) {
+                doc.addPage();
+                sigY = 30; // Posisi aman di halaman baru
+            }
             
+            doc.setFont("helvetica", "normal");
             doc.text("Mengetahui,", 30, sigY);
             doc.setFont("helvetica", "bold");
             doc.text(document.getElementById('pdfSignRole1').value, 30, sigY + 5);
